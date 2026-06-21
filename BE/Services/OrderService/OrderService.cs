@@ -198,6 +198,30 @@ namespace BE.Services.OrderService
             order.Status = status;
             order.UpdatedAt = DateTime.UtcNow;
 
+            // Cập nhật PaymentStatus theo logic nghiệp vụ
+            if (status == "Delivered")
+            {
+                // Đơn hàng giao thành công → thanh toán đã hoàn tất
+                // (COD: khách trả tiền khi nhận hàng, PayOS: đã thanh toán trước đó)
+                order.PaymentStatus = "Paid";
+            }
+            else if (status == "Cancelled")
+            {
+                order.PaymentStatus = "Cancelled";
+
+                // Hoàn lại số lượng kho khi Admin hủy đơn
+                foreach (var item in order.OrderItems)
+                {
+                    var product = await _productRepository.GetProductByIdAsync(item.ProductId);
+                    if (product != null)
+                    {
+                        product.Stock += item.Quantity;
+                        product.InStock = product.Stock > 0;
+                        await _productRepository.UpdateProductAsync(product);
+                    }
+                }
+            }
+
             await _orderRepository.UpdateOrderAsync(order);
             return true;
         }

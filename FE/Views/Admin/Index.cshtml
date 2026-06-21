@@ -19,7 +19,7 @@
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
   <div>
     <h1 style="font-size:1.5rem;font-weight:800;">Dashboard</h1>
-    <p style="color:#6b7280;font-size:.875rem;">Tổng quan hoạt động kinh doanh</p>
+    <p style="color:#6b7280;font-size:.875rem;">Tổng quan hoạt động kinh doanh thực tế</p>
   </div>
   <div style="font-size:.875rem;color:#6b7280;" id="dash-date"></div>
 </div>
@@ -27,24 +27,24 @@
 <!-- Stats -->
 <div class="stat-grid">
   <div class="stat-card">
-    <p style="font-size:.8rem;color:#6b7280;">Doanh thu tháng</p>
-    <div class="stat-value" style="color:#16a34a;">12.4M</div>
-    <p class="stat-change" style="color:#16a34a;">&uarr; +18% so với tháng trước</p>
+    <p style="font-size:.8rem;color:#6b7280;">Doanh thu hôm nay</p>
+    <div class="stat-value" style="color:#10b981;" id="stat-today-revenue">0đ</div>
+    <p class="stat-change" style="color:#6b7280;">Thực thu trong ngày</p>
   </div>
   <div class="stat-card">
-    <p style="font-size:.8rem;color:#6b7280;">Đơn hàng</p>
-    <div class="stat-value" style="color:#2563eb;">87</div>
-    <p class="stat-change" style="color:#16a34a;">&uarr; +12 đơn</p>
+    <p style="font-size:.8rem;color:#6b7280;">Doanh thu tháng này</p>
+    <div class="stat-value" style="color:#059669;" id="stat-month-revenue">0đ</div>
+    <p class="stat-change" style="color:#6b7280;">Tích lũy từ đầu tháng</p>
   </div>
   <div class="stat-card">
-    <p style="font-size:.8rem;color:#6b7280;">Khách hàng mới</p>
-    <div class="stat-value" style="color:#8b5cf6;">34</div>
-    <p class="stat-change" style="color:#16a34a;">&uarr; +8 người</p>
+    <p style="font-size:.8rem;color:#6b7280;">Lượng khách hàng</p>
+    <div class="stat-value" style="color:#8b5cf6;" id="stat-customer-count">0</div>
+    <p class="stat-change" style="color:#6b7280;">Tài khoản khách hàng</p>
   </div>
   <div class="stat-card">
-    <p style="font-size:.8rem;color:#6b7280;">Sản phẩm</p>
-    <div class="stat-value" style="color:#f59e0b;" id="product-count">0</div>
-    <p class="stat-change" style="color:#6b7280;">Đang bán</p>
+    <p style="font-size:.8rem;color:#6b7280;">Đơn đặt thành công</p>
+    <div class="stat-value" style="color:#2563eb;" id="stat-orders-count">0</div>
+    <p class="stat-change" style="color:#6b7280;">Đơn đã thanh toán/COD hợp lệ</p>
   </div>
 </div>
 
@@ -74,49 +74,90 @@
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script>
-        document.getElementById('dash-date').textContent = new Date().toLocaleDateString('vi-VN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-        document.getElementById('product-count').textContent = PRODUCTS.length;
+        let productsList = [];
+        let categoriesList = [];
 
-        // Revenue chart
-        new Chart(document.getElementById('revenue-chart').getContext('2d'), {
-          type:'line',
-          data:{
-            labels:['T2','T3','T4','T5','T6','T7','CN'],
-            datasets:[{
-              label:'Doanh thu (nghìn đồng)',
-              data:[1200,980,1500,1800,1350,2200,1700],
-              borderColor:'#16a34a', backgroundColor:'rgba(22,163,74,.08)', fill:true, tension:.4
-            }]
-          },
-          options:{ plugins:{legend:{display:false}}, scales:{ y:{beginAtZero:true} } }
-        });
+        async function loadStats() {
+          try {
+            const stats = await API.getDashboardStats();
+            document.getElementById('stat-today-revenue').textContent = fmt(stats.todayRevenue || 0);
+            document.getElementById('stat-month-revenue').textContent = fmt(stats.monthRevenue || 0);
+            document.getElementById('stat-customer-count').textContent = stats.customerCount || 0;
+            document.getElementById('stat-orders-count').textContent = stats.successfulOrderCount || 0;
+          } catch (e) {
+            console.error("Lỗi khi tải thống kê dashboard:", e);
+            showToast("Không thể tải thống kê thực tế", "error");
+          }
+        }
 
-        // Category chart
-        const catCounts = {};
-        PRODUCTS.forEach(p=>{ catCounts[p.category]=(catCounts[p.category]||0)+1; });
-        new Chart(document.getElementById('cat-chart').getContext('2d'), {
-          type:'doughnut',
-          data:{
-            labels:Object.keys(catCounts).map(c=>c==='vegetable'?'Rau củ':c==='flower'?'Hoa cảnh':c==='combo'?'Combo':'Phụ kiện'),
-            datasets:[{ data:Object.values(catCounts), backgroundColor:['#16a34a','#f59e0b','#8b5cf6','#2563eb'] }]
-          },
-          options:{ plugins:{ legend:{ position:'bottom', labels:{ boxWidth:12, font:{size:11} } } } }
-        });
+        async function initPage() {
+          document.getElementById('dash-date').textContent = new Date().toLocaleDateString('vi-VN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 
-        // Orders table
-        document.getElementById('orders-table').innerHTML = `
-          <thead><tr>
-            <th>Mã đơn</th><th>Khách hàng</th><th>Sản phẩm</th><th>Tổng tiền</th><th>Trạng thái</th><th>Hành động</th>
-          </tr></thead>
-          <tbody>${MOCK_ORDERS.slice(0,5).map(o=>`
-            <tr>
-              <td style="font-weight:600;color:#2563eb;">#${o.id}</td>
-              <td>${o.shippingInfo ? o.shippingInfo.fullName : 'Guest'}</td>
-              <td style="color:#6b7280;">${o.items?.length||1} sản phẩm</td>
-              <td style="font-weight:600;">${fmt(o.total)}</td>
-              <td>${statusLabel(o.status)}</td>
-              <td><a href="order-detail?id=${o.id}" style="font-size:.8rem;color:#2563eb;text-decoration:none;">Chi tiết</a></td>
-            </tr>`).join('')}
-          </tbody>`;
+          // Tải các thẻ thống kê thực tế
+          await loadStats();
+
+          // Revenue line chart (mô phỏng đồ thị)
+          new Chart(document.getElementById('revenue-chart').getContext('2d'), {
+            type:'line',
+            data:{
+              labels:['T2','T3','T4','T5','T6','T7','CN'],
+              datasets:[{
+                label:'Doanh thu (nghìn đồng)',
+                data:[1200,980,1500,1800,1350,2200,1700],
+                borderColor:'#16a34a', backgroundColor:'rgba(22,163,74,.08)', fill:true, tension:.4
+              }]
+            },
+            options:{ plugins:{legend:{display:false}}, scales:{ y:{beginAtZero:true} } }
+          });
+
+          // Tải dữ liệu vẽ biểu đồ tròn theo danh mục
+          try {
+            categoriesList = await API.getCategories();
+            productsList = await API.getProducts({ pageSize: 100 });
+            
+            const catCounts = {};
+            productsList.forEach(p => {
+              const catName = p.categoryName || 'Khác';
+              catCounts[catName] = (catCounts[catName] || 0) + 1;
+            });
+
+            new Chart(document.getElementById('cat-chart').getContext('2d'), {
+              type:'doughnut',
+              data:{
+                labels:Object.keys(catCounts),
+                datasets:[{ data:Object.values(catCounts), backgroundColor:['#16a34a','#f59e0b','#8b5cf6','#2563eb','#ec4899','#14b8a6'] }]
+              },
+              options:{ plugins:{ legend:{ position:'bottom', labels:{ boxWidth:12, font:{size:11} } } }
+            });
+          } catch (e) {
+            console.error("Lỗi khi dựng biểu đồ danh mục:", e);
+          }
+
+          // Tải danh sách đơn hàng gần đây từ API
+          try {
+            const ordersResponse = await API.getOrders({ pageSize: 5 });
+            const recentOrders = ordersResponse.orders || [];
+
+            document.getElementById('orders-table').innerHTML = `
+              <thead><tr>
+                <th>Mã đơn</th><th>Khách hàng</th><th>Sản phẩm</th><th>Tổng tiền</th><th>Trạng thái</th><th>Hành động</th>
+              </tr></thead>
+              <tbody>${recentOrders.length === 0 ? '<tr><td colspan="6" style="text-align:center;color:#6b7280;padding:2rem;">Chưa có đơn hàng nào thực tế.</td></tr>' : recentOrders.map(o => `
+                <tr>
+                  <td style="font-weight:600;color:#2563eb;">#${o.orderCode}</td>
+                  <td>${o.receiverName || 'Khách vãng lai'}</td>
+                  <td style="color:#6b7280;">${o.items?.length || 1} sản phẩm</td>
+                  <td style="font-weight:600;">${fmt(o.totalAmount)}</td>
+                  <td>${statusLabel(o.status.toLowerCase())}</td>
+                  <td><a href="order-detail?id=${o.orderId}" style="font-size:.8rem;color:#2563eb;text-decoration:none;">Chi tiết</a></td>
+                </tr>`).join('')}
+              </tbody>`;
+          } catch (e) {
+            console.error("Lỗi khi tải đơn hàng gần đây:", e);
+            document.getElementById('orders-table').innerHTML = '<tr><td colspan="6" style="text-align:center;color:#ef4444;padding:2rem;">Lỗi tải đơn hàng gần đây.</td></tr>';
+          }
+        }
+
+        initPage();
     </script>
 }

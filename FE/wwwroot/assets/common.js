@@ -719,6 +719,15 @@ const API = {
     }
   },
 
+  async getDashboardStats() {
+    try {
+      return await apiFetch('/admin/dashboard/stats');
+    } catch (e) {
+      console.error("Error fetching dashboard stats:", e);
+      throw e;
+    }
+  },
+
   // ── API: Categories ─────────────────────────────
   async getCategories() {
     try {

@@ -8,7 +8,7 @@ namespace FE.Controllers
         [HttpGet("")]
         [HttpGet("index")]
         [HttpGet("index.html")]
-        public IActionResult Index() => RedirectToAction("Products");
+        public IActionResult Index() => View();
 
         [HttpGet("products")]
         [HttpGet("products.html")]
