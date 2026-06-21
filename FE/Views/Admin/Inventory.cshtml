@@ -53,7 +53,7 @@
             productsList = [...PRODUCTS];
           }
 
-          const stockData = productsList.map(p=>({ ...p, stock:p.stock||Math.floor(Math.random()*100)+5 }));
+          const stockData = productsList.map(p=>({ ...p, stock: p.stock !== undefined ? p.stock : 0 }));
           const lowItems = stockData.filter(p=>p.stock<15);
           const total = stockData.reduce((s,p)=>s+p.stock,0);
 
