@@ -408,6 +408,8 @@ function renderFooter() {
             <li><a href="${base}track-order">Theo dõi đơn hàng</a></li>
             <li><a href="${base}orders">Lịch sử đơn hàng</a></li>
             <li><a href="${base}profile">Tài khoản của tôi</a></li>
+            <li><a href="${base}privacy">Chính sách bảo mật</a></li>
+            <li><a href="${base}terms">Điều khoản sử dụng</a></li>
           </ul>
         </div>
       </div>
@@ -558,13 +560,36 @@ document.addEventListener('DOMContentLoaded', () => {
   if(document.getElementById('site-header')) renderHeader();
   if(document.getElementById('mobile-nav')) renderMobileNav();
   if(document.getElementById('site-footer')) renderFooter();
+  initCookieConsent();
 });
+
+function initCookieConsent() {
+  if (localStorage.getItem('vuon_cookie_consent')) return;
+  const banner = document.createElement('div');
+  banner.id = 'cookie-consent-banner';
+  banner.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#1f2937;color:#fff;padding:1rem;z-index:99999;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;font-size:0.875rem;border-top:2px solid #16a34a;box-shadow:0 -4px 10px rgba(0,0,0,0.1);';
+  banner.innerHTML = `
+    <div style="flex:1;min-width:250px;">
+      Website này sử dụng cookie để cải thiện trải nghiệm của bạn và phân tích lượng truy cập. Xem thêm tại 
+      <a href="./privacy" style="color:#4ade80;text-decoration:underline;">Chính sách bảo mật</a>.
+    </div>
+    <div style="display:flex;gap:0.5rem;">
+      <button id="cookie-consent-accept" style="background:#16a34a;color:#fff;border:none;padding:0.5rem 1rem;border-radius:0.375rem;cursor:pointer;font-weight:600;font-size:0.875rem;transition:background 0.2s;">Đồng ý</button>
+    </div>
+  `;
+  document.body.appendChild(banner);
+  document.getElementById('cookie-consent-accept').addEventListener('click', () => {
+    localStorage.setItem('vuon_cookie_consent', 'accepted');
+    banner.remove();
+  });
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // BACKEND API LAYER
-// Thử gọi API thật tại http://localhost:5000/api, fallback về mock data nếu lỗi
+// Thử gọi API thật tại dynamic meta base URL hoặc fallback về localhost
 // ─────────────────────────────────────────────────────────────────────────────
-const API_BASE = 'http://localhost:5172/api';
+const apiMeta = document.querySelector('meta[name="api-base"]');
+const API_BASE = apiMeta ? apiMeta.getAttribute('content') : 'http://localhost:5172/api';
 
 // Lấy JWT token từ localStorage
 function getToken() { return localStorage.getItem('vuon_token'); }

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chính sách bảo mật - VƯƠN</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #16a34a;
+            --primary-hover: #15803d;
+            --bg: #f9fafb;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #4b5563;
+            --border: #e5e7eb;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 2rem 1rem;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--border);
+        }
+        .logo-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+        .logo-back:hover {
+            color: var(--primary-hover);
+        }
+        h1 {
+            color: #111827;
+            font-size: 2.25rem;
+            font-weight: 700;
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 0.75rem;
+        }
+        .date {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+        }
+        h2 {
+            color: #1f2937;
+            font-size: 1.5rem;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        p, li {
+            color: var(--text-muted);
+        }
+        ul {
+            padding-left: 1.5rem;
+        }
+        li {
+            margin-bottom: 0.5rem;
+        }
+        footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="./home" class="logo-back">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            Quay lại trang chủ
+        </a>
+        <h1>Chính sách Bảo mật</h1>
+        <div class="date">Cập nhật lần cuối: 21 tháng 06, 2026</div>
+
+        <p>Chào mừng bạn đến với <b>VƯƠN</b>. Chúng tôi cam kết bảo vệ thông tin cá nhân và quyền riêng tư của bạn. Chính sách bảo mật này giải thích cách chúng tôi thu thập, sử dụng và bảo vệ thông tin của bạn khi bạn sử dụng dịch vụ của chúng tôi.</p>
+
+        <h2>1. Thông tin chúng tôi thu thập</h2>
+        <p>Chúng tôi thu thập thông tin để cung cấp dịch vụ tốt hơn cho người dùng. Các loại thông tin bao gồm:</p>
+        <ul>
+            <li><b>Thông tin tài khoản:</b> Tên đầy đủ, email, số điện thoại, mật khẩu được mã hóa bảo mật khi bạn đăng ký tài khoản.</li>
+            <li><b>Thông tin đơn hàng:</b> Địa chỉ giao hàng, phương thức thanh toán, danh sách sản phẩm bạn đã chọn để thực hiện đơn hàng.</li>
+            <li><b>Lịch sử chat với AI:</b> Các câu hỏi và thông tin bạn cung cấp cho AI tư vấn nhằm tối ưu phản hồi và hỗ trợ chăm sóc cây trồng tốt hơn.</li>
+        </ul>
+
+        <h2>2. Cách chúng tôi sử dụng thông tin</h2>
+        <p>Chúng tôi sử dụng thông tin đã thu thập cho các mục đích:</p>
+        <ul>
+            <li>Xử lý và vận chuyển đơn đặt hàng của bạn.</li>
+            <li>Xác thực tài khoản và bảo mật thông tin bằng mã OTP qua Email.</li>
+            <li>Cung cấp và cải thiện câu trả lời của trợ lý AI Tư Vấn trồng cây.</li>
+            <li>Gửi các thông báo cập nhật, chương trình khuyến mãi hoặc hỗ trợ khách hàng.</li>
+        </ul>
+
+        <h2>3. Bảo mật thông tin</h2>
+        <p>Chúng tôi áp dụng các biện pháp bảo mật hiện đại nhất để bảo vệ thông tin của bạn:</p>
+        <ul>
+            <li>Mã hóa mật khẩu bằng công nghệ BCrypt bảo mật cao.</li>
+            <li>Mã hóa các kết nối truyền tải dữ liệu thông qua giao thức an toàn HTTPS (SSL).</li>
+            <li>Tuyệt đối không bán hay chia sẻ thông tin cá nhân của bạn cho bên thứ ba vì mục đích thương mại.</li>
+        </ul>
+
+        <h2>4. Quyền lợi của bạn</h2>
+        <p>Bạn có toàn quyền truy cập, chỉnh sửa hoặc yêu cầu xóa thông tin cá nhân của mình bất kỳ lúc nào bằng cách đăng nhập vào tài khoản cá nhân hoặc liên hệ trực tiếp với bộ phận hỗ trợ khách hàng của chúng tôi qua Email: <b>Vuon@gmail.com</b>.</p>
+
+        <footer>
+            © 2026 VƯƠN. Bảo lưu mọi quyền.
+        </footer>
+    </div>
+</body>
+</html>
