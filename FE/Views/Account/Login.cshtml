@@ -115,7 +115,7 @@
 
             if(result.ok) {
                 const user = Store.getUser();
-                window.location.href = (user && user.role && user.role.toLowerCase() === 'admin') ? '/admin/index' : 'home';
+                window.location.href = (user && user.role && user.role.toLowerCase() === 'admin') ? '/admin/products' : 'home';
             } else {
                 errEl.textContent = result.error || 'Email hoặc mật khẩu không đúng';
                 errEl.style.display = 'block';

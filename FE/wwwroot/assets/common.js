@@ -710,6 +710,15 @@ const API = {
     }
   },
 
+  async getUsers() {
+    try {
+      return await apiFetch('/users');
+    } catch (e) {
+      console.error("Error fetching users:", e);
+      throw e;
+    }
+  },
+
   // ── API: Categories ─────────────────────────────
   async getCategories() {
     try {

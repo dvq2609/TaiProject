@@ -33,41 +33,65 @@
 
 @section Scripts {
     <script>
-        // Build customer list from mock users + order data
-        const customers = MOCK_USERS.map(u=>{
-          const userOrders = MOCK_ORDERS.filter(o=>o.userId===u.id||(o.shippingInfo && o.shippingInfo.fullName === u.name));
-          return {
-            ...u,
-            orderCount: u.totalOrders || userOrders.length || Math.floor(Math.random()*5),
-            totalSpent: u.totalSpent || userOrders.reduce((s,o)=>s+o.total,0) || Math.floor(Math.random()*500000+50000),
-            joinDate: u.joinedDate || u.joinDate || '15/01/2025'
-          };
-        });
+        let customers = [];
+        let filtered = [];
 
-        let filtered=[...customers];
+        async function loadCustomers() {
+          const tbody = document.getElementById('cust-tbody');
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem;"><span class="spinner"></span> Đang tải dữ liệu...</td></tr>';
+          
+          try {
+            const allUsers = await API.getUsers();
+            // Lọc ra các user có RoleId == 2 (role User) làm khách hàng
+            const dbUsers = allUsers.filter(u => u.roleId === 2);
+            
+            customers = dbUsers.map(u => {
+              let joinDateStr = '15/01/2025';
+              if (u.createdAt) {
+                const date = new Date(u.createdAt);
+                joinDateStr = date.toLocaleDateString('vi-VN');
+              }
+              return {
+                id: u.userId,
+                fullName: u.fullName || 'Khách hàng',
+                email: u.email,
+                phone: u.phoneNumber || '--',
+                orderCount: u.orderCount || 0,
+                totalSpent: u.totalSpent || 0,
+                joinDate: joinDateStr
+              };
+            });
+
+            filtered = [...customers];
+            renderTable();
+          } catch (e) {
+            console.error("Lỗi khi tải danh sách khách hàng:", e);
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#ef4444;padding:2rem;">Lỗi tải dữ liệu: ${e.message}</td></tr>`;
+          }
+        }
 
         function filterCust() {
-          const q=document.getElementById('search-cust').value.toLowerCase();
-          filtered=customers.filter(c=> {
-            const name = c.name || c.fullName || '';
-            return !q||name.toLowerCase().includes(q)||(c.email||'').includes(q)||(c.phone||'').includes(q);
+          const q = document.getElementById('search-cust').value.toLowerCase();
+          filtered = customers.filter(c => {
+            const name = c.fullName || '';
+            return !q || name.toLowerCase().includes(q) || (c.email || '').toLowerCase().includes(q) || (c.phone || '').includes(q);
           });
           renderTable();
         }
 
         function renderTable() {
-          document.getElementById('cust-count').textContent=filtered.length+' khách hàng';
-          document.getElementById('cust-tbody').innerHTML=filtered.map((c,i)=>`
+          document.getElementById('cust-count').textContent = filtered.length + ' khách hàng';
+          document.getElementById('cust-tbody').innerHTML = filtered.map((c, i) => `
             <tr>
               <td style="color:#9ca3af;">${i+1}</td>
               <td>
                 <div style="display:flex;align-items:center;gap:.75rem;">
-                  <div class="cust-avatar">${(c.name||c.fullName||'?').charAt(0).toUpperCase()}</div>
-                  <span style="font-weight:600;">${c.name||c.fullName}</span>
+                  <div class="cust-avatar">${(c.fullName || '?').charAt(0).toUpperCase()}</div>
+                  <span style="font-weight:600;">${c.fullName}</span>
                 </div>
               </td>
-              <td style="color:#6b7280;">${c.email||'--'}</td>
-              <td>${c.phone||'--'}</td>
+              <td style="color:#6b7280;">${c.email || '--'}</td>
+              <td>${c.phone || '--'}</td>
               <td style="text-align:center;">${c.orderCount}</td>
               <td style="font-weight:600;color:#16a34a;">${fmt(c.totalSpent)}</td>
               <td style="color:#9ca3af;font-size:.8rem;">${c.joinDate}</td>
@@ -77,6 +101,6 @@
             </tr>`).join('');
         }
 
-        renderTable();
+        loadCustomers();
     </script>
 }
