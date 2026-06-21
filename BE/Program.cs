@@ -125,6 +125,51 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
+// Tự động chạy Migration & Seed dữ liệu mẫu khi khởi động trên Production
+using (var scope = app.Services.CreateScope())
+{
+    try
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<BE.Models.ApplicationDbContext>();
+        
+        // 1. Tạo Database và chạy các bảng Migrations nếu chưa có
+        dbContext.Database.Migrate();
+        
+        // 2. Chạy file seed_data.sql để nạp danh mục, sản phẩm mẫu nếu DB trống
+        if (!dbContext.Products.Any())
+        {
+            var seedSqlPath = Path.Combine(AppContext.BaseDirectory, "seed_data.sql");
+            if (!File.Exists(seedSqlPath))
+            {
+                seedSqlPath = Path.Combine(Directory.GetCurrentDirectory(), "seed_data.sql");
+            }
+
+            if (File.Exists(seedSqlPath))
+            {
+                var sqlContent = File.ReadAllText(seedSqlPath);
+                var commands = sqlContent.Split(new[] { "GO\r\n", "GO\n", "go\r\n", "go\n" }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (var cmd in commands)
+                {
+                    var cleanCmd = cmd.Trim();
+                    if (!string.IsNullOrWhiteSpace(cleanCmd))
+                    {
+                        dbContext.Database.ExecuteSqlRaw(cleanCmd);
+                    }
+                }
+                Console.WriteLine("Database seeded successfully from seed_data.sql!");
+            }
+            else
+            {
+                Console.WriteLine("seed_data.sql not found. Database seeding skipped.");
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error during database migration/seeding: {ex.Message}");
+    }
+}
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
