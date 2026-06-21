@@ -38,8 +38,8 @@ SET IDENTITY_INSERT [dbo].[User] ON;
 
 MERGE INTO [dbo].[User] AS Target
 USING (VALUES 
-    (1, 1, N'Admin Vườn', N'admin@vuon.vn', N'0901234567', N'$2a$12$R9h/lIPzNgbdy11QJbMc8eb42tHRLBVsa5AZYgKySJ1FMhmJZ.t2a', 1, GETDATE()),
-    (2, 2, N'Nguyễn Văn A', N'nguyenvana@email.com', N'0912345678', N'$2a$12$R9h/lIPzNgbdy11QJbMc8eb42tHRLBVsa5AZYgKySJ1FMhmJZ.t2a', 1, GETDATE())
+    (1, 1, N'Admin Vườn', N'admin@vuon.vn', N'0901234567', N'$2a$11$6StPx5/MJ3YStF79bd1yWeGsGcqJJre8EEchTNgtMbTQqiwYL9qFC', 1, GETDATE()),
+    (2, 2, N'Nguyễn Văn A', N'nguyenvana@email.com', N'0912345678', N'$2a$11$6StPx5/MJ3YStF79bd1yWeGsGcqJJre8EEchTNgtMbTQqiwYL9qFC', 1, GETDATE())
 ) AS Source (UserId, RoleId, FullName, Email, PhoneNumber, PasswordHash, Status, CreatedAt)
 ON Target.UserId = Source.UserId
 WHEN MATCHED THEN

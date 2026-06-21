@@ -664,11 +664,11 @@ const API = {
 
   async register(name, email, password, phone) {
     try {
-      await apiFetch('/auth/register', {
+      const data = await apiFetch('/auth/register', {
         method: 'POST',
         body: JSON.stringify({ fullName: name, email, password, phoneNumber: phone })
       });
-      return { ok: true };
+      return { ok: true, message: data?.message || data?.Message };
     } catch (e) {
       return { ok: false, error: e.message };
     }

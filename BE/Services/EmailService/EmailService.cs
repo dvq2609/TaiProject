@@ -25,7 +25,8 @@ namespace BE.Services.EmailService
             {
                 EnableSsl = true,
                 UseDefaultCredentials = false,
-                Credentials = new NetworkCredential(username, password)
+                Credentials = new NetworkCredential(username, password),
+                Timeout = 5000 // 5 seconds timeout to prevent hanging on Railway
             };
 
             using var mailMessage = new MailMessage

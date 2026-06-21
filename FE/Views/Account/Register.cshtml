@@ -92,8 +92,9 @@
             btn.textContent = 'Tạo tài khoản'; btn.disabled = false;
 
             if(result.ok) {
-                showToast('Đăng ký thành công! Vui lòng kiểm tra email để xác thực.');
-                setTimeout(()=>{ window.location.href='login?status=success&message=' + encodeURIComponent('Đăng ký thành công! Vui lòng kiểm tra email để kích hoạt tài khoản trước khi đăng nhập.'); }, 1500);
+                const successMsg = result.message || 'Đăng ký thành công! Vui lòng kiểm tra email để xác thực.';
+                showToast(successMsg);
+                setTimeout(()=>{ window.location.href='login?status=success&message=' + encodeURIComponent(successMsg); }, 3000);
             } else {
                 errEl.textContent = result.error || 'Đăng ký thất bại, thử lại sau.';
                 errEl.style.display='block';

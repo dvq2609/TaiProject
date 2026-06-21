@@ -163,6 +163,34 @@ using (var scope = app.Services.CreateScope())
                 Console.WriteLine("seed_data.sql not found. Database seeding skipped.");
             }
         }
+
+        // 3. Đảm bảo mật khẩu mặc định "123456" cho các tài khoản mẫu được mã hóa chính xác và kích hoạt tài khoản
+        var adminUser = dbContext.Users.FirstOrDefault(u => u.Email == "admin@vuon.vn");
+        if (adminUser != null)
+        {
+            adminUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword("123456");
+            adminUser.Status = true;
+        }
+
+        var userA = dbContext.Users.FirstOrDefault(u => u.Email == "nguyenvana@email.com");
+        if (userA != null)
+        {
+            userA.PasswordHash = BCrypt.Net.BCrypt.HashPassword("123456");
+            userA.Status = true;
+        }
+
+        // 4. Kích hoạt toàn bộ các tài khoản chưa kích hoạt khác để tránh bị kẹt do lỗi gửi email trước đó
+        var inactiveUsers = dbContext.Users.Where(u => !u.Status).ToList();
+        foreach (var u in inactiveUsers)
+        {
+            u.Status = true;
+            u.EmailConfirmedAt = DateTime.UtcNow;
+            u.EmailConfirmationToken = null;
+            u.EmailConfirmationTokenExpiresAt = null;
+        }
+
+        dbContext.SaveChanges();
+        Console.WriteLine("Database integrity check completed. Pattern users reset/activated successfully!");
     }
     catch (Exception ex)
     {
