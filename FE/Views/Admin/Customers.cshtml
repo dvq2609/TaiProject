@@ -1,0 +1,82 @@
+@{
+    ViewData["Title"] = "Quản lý khách hàng";
+}
+
+@section Styles {
+    <style>
+        .data-table{width:100%;border-collapse:collapse;background:#fff;border-radius:.75rem;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.07);} 
+        .data-table th{text-align:left;padding:.75rem 1rem;background:#f9fafb;font-size:.8rem;font-weight:600;color:#6b7280;border-bottom:1px solid #e5e7eb;} 
+        .data-table td{padding:.75rem 1rem;border-bottom:1px solid #f9fafb;font-size:.875rem;} 
+        .data-table tr:hover td{background:#fafafa;} 
+        .cust-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#16a34a,#4ade80);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.875rem;}
+    </style>
+}
+
+<div style="margin-bottom:1.5rem;">
+  <h1 style="font-size:1.5rem;font-weight:800;">Quản lý khách hàng</h1>
+  <p style="color:#6b7280;font-size:.875rem;" id="cust-count"></p>
+</div>
+
+<div style="display:flex;gap:.5rem;margin-bottom:1rem;">
+  <input type="text" id="search-cust" placeholder="Tìm theo tên, email, SĐT..." style="flex:1;padding:.6rem 1rem;border:1px solid #e5e7eb;border-radius:.5rem;font-size:.875rem;outline:none;" oninput="filterCust()">
+</div>
+
+<div style="overflow-x:auto;">
+  <table class="data-table">
+    <thead><tr>
+      <th>#</th><th>Khách hàng</th><th>Email</th><th>Điện thoại</th>
+      <th>Đơn hàng</th><th>Tổng chi tiêu</th><th>Ngày đăng ký</th><th>Hành động</th>
+    </tr></thead>
+    <tbody id="cust-tbody"></tbody>
+  </table>
+</div>
+
+@section Scripts {
+    <script>
+        // Build customer list from mock users + order data
+        const customers = MOCK_USERS.map(u=>{
+          const userOrders = MOCK_ORDERS.filter(o=>o.userId===u.id||(o.shippingInfo && o.shippingInfo.fullName === u.name));
+          return {
+            ...u,
+            orderCount: u.totalOrders || userOrders.length || Math.floor(Math.random()*5),
+            totalSpent: u.totalSpent || userOrders.reduce((s,o)=>s+o.total,0) || Math.floor(Math.random()*500000+50000),
+            joinDate: u.joinedDate || u.joinDate || '15/01/2025'
+          };
+        });
+
+        let filtered=[...customers];
+
+        function filterCust() {
+          const q=document.getElementById('search-cust').value.toLowerCase();
+          filtered=customers.filter(c=> {
+            const name = c.name || c.fullName || '';
+            return !q||name.toLowerCase().includes(q)||(c.email||'').includes(q)||(c.phone||'').includes(q);
+          });
+          renderTable();
+        }
+
+        function renderTable() {
+          document.getElementById('cust-count').textContent=filtered.length+' khách hàng';
+          document.getElementById('cust-tbody').innerHTML=filtered.map((c,i)=>`
+            <tr>
+              <td style="color:#9ca3af;">${i+1}</td>
+              <td>
+                <div style="display:flex;align-items:center;gap:.75rem;">
+                  <div class="cust-avatar">${(c.name||c.fullName||'?').charAt(0).toUpperCase()}</div>
+                  <span style="font-weight:600;">${c.name||c.fullName}</span>
+                </div>
+              </td>
+              <td style="color:#6b7280;">${c.email||'--'}</td>
+              <td>${c.phone||'--'}</td>
+              <td style="text-align:center;">${c.orderCount}</td>
+              <td style="font-weight:600;color:#16a34a;">${fmt(c.totalSpent)}</td>
+              <td style="color:#9ca3af;font-size:.8rem;">${c.joinDate}</td>
+              <td>
+                <a href="customer-detail?id=${c.id}" class="btn btn-outline" style="font-size:.75rem;padding:.3rem .6rem;">Xem</a>
+              </td>
+            </tr>`).join('');
+        }
+
+        renderTable();
+    </script>
+}

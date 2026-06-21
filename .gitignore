@@ -1,0 +1,111 @@
+## ======================================
+## VƯƠN Project .gitignore
+## ======================================
+
+# ── SECRETS (QUAN TRỌNG NHẤT — KHÔNG BAO GIỜ COMMIT) ──
+.env
+.env.*
+!.env.example
+
+# ── .NET / C# ──
+bin/
+obj/
+*.user
+*.suo
+.vs/
+*.rsuser
+.idea/
+*.DotSettings
+*.DotSettings.user
+
+# ── ASP.NET ──
+appsettings.Development.json
+appsettings.Production.json
+appsettings.Staging.json
+
+# ── Build outputs ──
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# ── NuGet ──
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+!**/packages/repositories.config
+
+# ── Visual Studio ──
+.vs/
+*.aps
+*.ncb
+*.opendb
+*.opensdf
+*.sdf
+*.cachefile
+*.VC.db
+*.VC.VC.opendb
+
+# ── Rider ──
+.idea/
+
+# ── Node.js (nếu có) ──
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dist/
+.next/
+.nuxt/
+
+# ── OS ──
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ── Logs ──
+*.log
+logs/
+
+# ── Database local ──
+*.mdf
+*.ldf
+*.sqlite
+*.db
+
+# ── Publish profiles ──
+**/Properties/PublishProfiles/
+PublishScripts/
+
+# ── Azure ──
+csx/
+*.azurePubxml
+*.pubxml
+*.publishproj
+
+# ── Backup ──
+*.bak
+*.tmp
+*.temp
+
+# ── AI / Project Management (internal) ──
+.brain/
+plans/
+seed_data.sql
+html-frontend
+docs
+*.md

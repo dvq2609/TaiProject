@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sản phẩm - VƯƠN</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    .filter-sidebar { background:#fff; border-radius:.75rem; box-shadow:0 1px 3px rgba(0,0,0,.08); padding:1.5rem; position:sticky; top:80px; }
+    .filter-sidebar h3 { font-weight:600; color:#111827; margin-bottom:.75rem; }
+    .filter-opt { display:flex; align-items:center; gap:.5rem; margin-bottom:.5rem; font-size:.875rem; color:#374151; cursor:pointer; }
+    .filter-opt input { accent-color:#16a34a; }
+    .products-layout { display:grid; grid-template-columns:240px 1fr; gap:2rem; }
+    @media(max-width:768px){ .products-layout { grid-template-columns:1fr; } .filter-sidebar { display:none; } }
+    .mobile-filter-btn { display:none; }
+    @media(max-width:768px){ .mobile-filter-btn { display:flex; } }
+    .filter-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:200; align-items:flex-end; }
+    .filter-modal.open { display:flex; }
+    .filter-modal-inner { background:#fff; border-radius:1rem 1rem 0 0; padding:1.5rem; width:100%; max-height:80vh; overflow-y:auto; }
+  </style>
+</head>
+<body>
+  <header id="site-header"></header>
+
+  <div class="page-content">
+    <div style="margin-bottom:1.5rem;">
+      <h1 id="cat-title" style="font-size:1.75rem;font-weight:700;color:#111827;margin-bottom:.25rem;"></h1>
+      <p id="cat-count" style="color:#6b7280;"></p>
+    </div>
+
+    <button class="btn btn-gray mobile-filter-btn" onclick="document.getElementById('filter-modal').classList.add('open')" style="margin-bottom:1rem;">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+      Bộ lọc
+    </button>
+
+    <div class="products-layout">
+      <!-- Filters -->
+      <aside class="filter-sidebar">
+        <h2 style="font-size:1rem;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem;">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          Bộ lọc
+        </h2>
+        <div id="filters-desktop"><!-- injected --></div>
+        <button class="btn btn-green" style="width:100%;margin-top:1rem;" onclick="applyFilters()">Áp dụng</button>
+      </aside>
+
+      <!-- Products -->
+      <div>
+        <div class="grid-4" id="product-grid" style="gap:1.25rem;"></div>
+        <div id="no-products" style="display:none;text-align:center;padding:3rem 0;color:#6b7280;">
+          <p style="font-size:1.1rem;">Không tìm thấy sản phẩm nào</p>
+          <a href="products?category=vegetable" class="btn btn-green" style="margin-top:1rem;">Xem cây rau</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Filter Modal -->
+  <div id="filter-modal" class="filter-modal" onclick="if(event.target===this)this.classList.remove('open')">
+    <div class="filter-modal-inner">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+        <h2 style="font-size:1.1rem;font-weight:700;">Bộ lọc</h2>
+        <button onclick="document.getElementById('filter-modal').classList.remove('open')" style="background:none;border:none;cursor:pointer;font-size:1.5rem;">✕</button>
+      </div>
+      <div id="filters-mobile"><!-- injected --></div>
+      <button class="btn btn-green" style="width:100%;margin-top:1rem;" onclick="applyFilters();document.getElementById('filter-modal').classList.remove('open')">Áp dụng</button>
+    </div>
+  </div>
+
+  <div id="mobile-nav"></div>
+  <footer id="site-footer"></footer>
+
+  <script src="assets/common.js"></script>
+  <script>
+    const CAT_NAMES = { vegetable:'Cây rau', flower:'Cây hoa', combo:'Combo', accessory:'Phụ kiện', seeds:'Hạt giống', fertilizer:'Phân bón', tools:'Dụng cụ làm vườn' };
+    const category = getParam('category') || '';
+    let allProducts = [];
+    let filtered = [];
+
+    document.getElementById('cat-title').textContent = CAT_NAMES[category] || 'Tất cả sản phẩm';
+
+    const filterHTML = `
+      <div style="margin-bottom:1.25rem;">
+        <h3 style="font-weight:600;margin-bottom:.75rem;">Giá</h3>
+        ${[['all','Tất cả'],['under50k','Dưới 50.000đ'],['50k-100k','50.000đ - 100.000đ'],['above100k','Trên 100.000đ']].map(([v,l])=>`
+          <label class="filter-opt"><input type="radio" name="price" value="${v}" ${v==='all'?'checked':''}> ${l}</label>`).join('')}
+      </div>
+      <div style="margin-bottom:1.25rem;">
+        <h3 style="font-weight:600;margin-bottom:.75rem;">Độ khó</h3>
+        ${[['all','Tất cả'],['Dễ','Dễ'],['Trung bình','Trung bình'],['Khó','Khó']].map(([v,l])=>`
+          <label class="filter-opt"><input type="radio" name="diff" value="${v}" ${v==='all'?'checked':''}> ${l}</label>`).join('')}
+      </div>`;
+
+    document.getElementById('filters-desktop').innerHTML = filterHTML;
+    document.getElementById('filters-mobile').innerHTML = filterHTML;
+
+    function applyFilters() {
+      const p = document.querySelector('input[name="price"]:checked')?.value || 'all';
+      const d = document.querySelector('input[name="diff"]:checked')?.value || 'all';
+      filtered = allProducts.filter(pr => {
+        if(p==='under50k' && pr.price>=50000) return false;
+        if(p==='50k-100k' && (pr.price<50000||pr.price>100000)) return false;
+        if(p==='above100k' && pr.price<=100000) return false;
+        if(d!=='all' && pr.difficulty!==d) return false;
+        return true;
+      });
+      renderProducts();
+    }
+
+    function renderProducts() {
+      const grid = document.getElementById('product-grid');
+      const none = document.getElementById('no-products');
+      if(filtered.length===0) { grid.innerHTML=''; none.style.display='block'; }
+      else {
+        none.style.display='none';
+        grid.innerHTML = filtered.map(p => productCardHTML(p)).join('');
+      }
+      document.getElementById('cat-count').textContent = `Tìm thấy ${filtered.length} sản phẩm`;
+    }
+
+    // Map category slug → categoryId qua API categories
+    (async () => {
+      document.getElementById('product-grid').innerHTML =
+        '<div style="text-align:center;padding:3rem;color:#9ca3af;">Đang tải sản phẩm...</div>';
+
+      const SLUG_TO_NAME = {
+        vegetable: 'Cây rau',
+        flower:    'Cây hoa',
+        combo:     'Combo',
+        accessory: 'Phụ kiện'
+      };
+
+      let categoryId = null;
+      try {
+        const cats = await API.getCategories();
+        const targetName = SLUG_TO_NAME[category];
+        if (targetName) {
+          const matched = cats.find(c => c.name.toLowerCase() === targetName.toLowerCase());
+          if (matched) categoryId = matched.categoryId;
+        }
+      } catch(e) { /* no filter */ }
+
+      // Check for ?search= URL param (from header search redirect or direct link)
+      const urlSearch = getParam('search');
+
+      async function loadWithSearch(searchQuery) {
+        document.getElementById('product-grid').innerHTML =
+          '<div style="text-align:center;padding:3rem;color:#9ca3af;">Đang tìm kiếm...</div>';
+        try {
+          const params = new URLSearchParams({ page: 1, pageSize: 100 });
+          if (categoryId) params.set('categoryId', categoryId);
+          if (searchQuery) params.set('search', searchQuery);
+          const data = await apiFetch('/products?' + params);
+          allProducts = (data.products || [])
+            .filter(p => p.status !== false)
+            .map(p => API._mapProduct(p));
+        } catch(e) {
+          let list = [...PRODUCTS];
+          if (category) list = list.filter(p => p.category === category);
+          if (searchQuery) list = list.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
+          allProducts = list;
+        }
+        filtered = [...allProducts];
+        renderProducts();
+
+        // Update page title to show search context
+        if (searchQuery) {
+          document.getElementById('cat-title').textContent = `Kết quả: "${searchQuery}"`;
+        } else {
+          document.getElementById('cat-title').textContent = CAT_NAMES[category] || 'Tất cả sản phẩm';
+        }
+      }
+
+      // Initial load
+      await loadWithSearch(urlSearch || '');
+
+      // Listen for live search from header search bar
+      document.addEventListener('header-search-change', async (e) => {
+        const q = e.detail?.query || '';
+        await loadWithSearch(q);
+      });
+    })();
+  </script>
+</body>
+</html>

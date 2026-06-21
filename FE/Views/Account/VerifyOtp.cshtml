@@ -1,0 +1,106 @@
+@{
+    ViewData["Title"] = "Xác thực OTP";
+    ViewData["HideHeaderFooter"] = true;
+}
+
+@section Styles {
+    <style>
+        body { background: #f9fafb; }
+        .otp-row { display: flex; gap: .5rem; justify-content: center; margin: 1.5rem 0; }
+        .otp-input { width: 48px; height: 56px; text-align: center; font-size: 1.25rem; border: 2px solid #d1d5db; border-radius: .5rem; outline: none; transition: border .2s; }
+        .otp-input:focus { border-color: #16a34a; box-shadow: 0 0 0 2px rgba(22,163,74,.15); }
+    </style>
+}
+
+<div class="auth-page">
+    <div class="auth-card">
+        <button onclick="history.back()" style="display:inline-flex;align-items:center;gap:.5rem;color:#6b7280;font-size:.875rem;border:none;background:none;cursor:pointer;margin-bottom:1.5rem;">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            Quay lại
+        </button>
+        <div class="auth-icon green-light" style="width:64px;height:64px;">
+            <svg width="32" height="32" fill="none" stroke="#16a34a" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h1 style="text-align:center;font-size:1.5rem;font-weight:700;margin-bottom:.25rem;">Xác thực OTP</h1>
+        <p style="text-align:center;color:#6b7280;">Nhập mã OTP đã được gửi đến email của bạn</p>
+        <p style="text-align:center;font-size:.875rem;color:#9ca3af;margin-bottom:1rem;" id="otp-email-masked">abc***@@email.com</p>
+
+        <div class="otp-row" id="otp-row">
+            <input class="otp-input" type="text" maxlength="1">
+            <input class="otp-input" type="text" maxlength="1">
+            <input class="otp-input" type="text" maxlength="1">
+            <input class="otp-input" type="text" maxlength="1">
+            <input class="otp-input" type="text" maxlength="1">
+            <input class="otp-input" type="text" maxlength="1">
+        </div>
+
+        <button id="verify-btn" onclick="verifyOTP()" class="btn btn-green btn-full" disabled>Xác nhận</button>
+
+        <p style="text-align:center;margin-top:1rem;font-size:.875rem;color:#6b7280;">
+            Không nhận được mã? <button onclick="showToast('Đã gửi lại mã OTP!')" style="background:none;border:none;color:#16a34a;cursor:pointer;">Gửi lại</button>
+        </p>
+        <div class="alert alert-warning" style="margin-top:1rem;">⏱️ Mã OTP có hiệu lực trong 5 phút</div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const inputs = document.querySelectorAll('.otp-input');
+        const btn = document.getElementById('verify-btn');
+        const emailMaskedEl = document.getElementById('otp-email-masked');
+
+        // Hiển thị email đang chờ xác thực nếu có
+        const pendingEmail = sessionStorage.getItem('pending_email');
+        if (pendingEmail) {
+            const parts = pendingEmail.split('@@');
+            if (parts.length === 2) {
+                const name = parts[0];
+                const domain = parts[1];
+                const masked = name.length > 3 ? name.substring(0, 3) + '***' : name + '***';
+                emailMaskedEl.textContent = masked + '@@' + domain;
+            } else {
+                emailMaskedEl.textContent = pendingEmail;
+            }
+        }
+
+        inputs.forEach((inp, i) => {
+            inp.addEventListener('input', (e) => {
+                if(e.target.value && i < inputs.length-1) inputs[i+1].focus();
+                checkFull();
+            });
+            inp.addEventListener('keydown', (e) => {
+                if(e.key==='Backspace' && !inp.value && i>0) { inputs[i-1].focus(); inputs[i-1].value=''; checkFull(); }
+            });
+        });
+
+        function checkFull() {
+            const full = [...inputs].every(i=>i.value);
+            btn.disabled = !full;
+            btn.style.opacity = full ? '1' : '.5';
+        }
+
+        async function verifyOTP() {
+            const otp = [...inputs].map(i => i.value).join('');
+            const email = sessionStorage.getItem('pending_email') || '';
+            const otpType = sessionStorage.getItem('otp_type') || 'verify';
+            btn.textContent = 'Đang xác thực...'; btn.disabled = true;
+
+            if (otpType === 'reset') {
+                // Lưu OTP để trang reset-password dùng
+                sessionStorage.setItem('reset_otp', otp);
+                showToast('OTP hợp lệ! Tạo mật khẩu mới.');
+                setTimeout(() => { window.location.href = 'login'; }, 1200);
+            } else {
+                const result = await API.verifyOtp(email, otp);
+                btn.textContent = 'Xác nhận'; btn.disabled = false;
+                if (result.ok) {
+                    sessionStorage.removeItem('pending_email');
+                    showToast('Xác thực thành công!');
+                    setTimeout(() => { window.location.href = 'login'; }, 1500);
+                } else {
+                    showToast(result.error || 'Mã OTP không đúng', 'error');
+                }
+            }
+        }
+    </script>
+}

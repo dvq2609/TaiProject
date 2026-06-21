@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nhắc lịch tưới cây - VƯƠN</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    .reminder-item { display:flex; align-items:center; gap:1rem; padding:1rem; background:#fff; border-radius:.5rem; box-shadow:0 1px 3px rgba(0,0,0,.06); margin-bottom:.75rem; }
+    .reminder-icon { width:40px; height:40px; background:#f0fdf4; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .toggle-switch { position:relative; width:44px; height:24px; cursor:pointer; }
+    .toggle-switch input { opacity:0; width:0; height:0; }
+    .slider { position:absolute; inset:0; background:#d1d5db; border-radius:24px; transition:.3s; }
+    .slider::before { content:''; position:absolute; height:18px; width:18px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition:.3s; }
+    .toggle-switch input:checked + .slider { background:#16a34a; }
+    .toggle-switch input:checked + .slider::before { transform:translateX(20px); }
+  </style>
+</head>
+<body>
+  <header id="site-header"></header>
+  <div class="page-content" style="max-width:700px;">
+    <h1 style="font-size:1.75rem;font-weight:700;margin-bottom:.5rem;">Nhắc lịch tưới cây</h1>
+    <p style="color:#6b7280;margin-bottom:1.5rem;">AI sẽ nhắc bạn tưới cây đúng giờ mỗi ngày</p>
+
+    <div class="card card-pad" style="margin-bottom:1.5rem;">
+      <h2 style="font-weight:700;margin-bottom:1rem;">Thêm nhắc nhở</h2>
+      <div class="grid-2" style="gap:.75rem;margin-bottom:.75rem;">
+        <div class="form-group" style="margin:0;">
+          <label>Loại cây</label>
+          <select id="plant-select" class="form-control">
+            <option>Cà chua bi</option>
+            <option>Rau cải xanh</option>
+            <option>Hoa hồng</option>
+            <option>Húng quế</option>
+            <option>Hoa oải hương</option>
+            <option>Rau muống</option>
+            <option>Cây bạc hà</option>
+            <option>Lan hồ điệp</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin:0;">
+          <label>Giờ tưới</label>
+          <input type="time" id="water-time" class="form-control" value="07:00">
+        </div>
+      </div>
+      <button onclick="addReminder()" class="btn btn-green">+ Thêm nhắc nhở</button>
+    </div>
+
+    <div>
+      <h2 style="font-weight:700;margin-bottom:1rem;">Lịch tưới của bạn</h2>
+      <div id="reminder-list"></div>
+    </div>
+
+    <div class="alert alert-info" style="margin-top:1rem;">
+      🔔 Nhắc nhở sẽ hiển thị trên trình duyệt nếu bạn cho phép thông báo
+    </div>
+  </div>
+  <div id="mobile-nav"></div>
+  <footer id="site-footer"></footer>
+  <script src="assets/common.js"></script>
+  <script>
+    let reminders = JSON.parse(localStorage.getItem('vuon_reminders')||'[]');
+    if(reminders.length===0) {
+      reminders = [
+        { id:1, plant:'Cà chua bi', time:'07:00', active:true },
+        { id:2, plant:'Rau cải xanh', time:'17:30', active:true },
+        { id:3, plant:'Hoa hồng', time:'06:30', active:false }
+      ];
+    }
+
+    function renderList() {
+      const el = document.getElementById('reminder-list');
+      if(reminders.length===0) { el.innerHTML='<p style="text-align:center;color:#9ca3af;padding:2rem;">Chưa có nhắc nhở nào</p>'; return; }
+      el.innerHTML = reminders.map(r=>`
+        <div class="reminder-item">
+          <div class="reminder-icon">💧</div>
+          <div style="flex:1;">
+            <p style="font-weight:500;">${r.plant}</p>
+            <p style="font-size:.8rem;color:#6b7280;">⏰ ${r.time} mỗi ngày</p>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" ${r.active?'checked':''} onchange="toggleReminder(${r.id})">
+            <span class="slider"></span>
+          </label>
+          <button onclick="deleteReminder(${r.id})" style="background:none;border:none;color:#ef4444;cursor:pointer;padding:.25rem;">✕</button>
+        </div>`).join('');
+    }
+
+    function addReminder() {
+      const plant=document.getElementById('plant-select').value;
+      const time=document.getElementById('water-time').value;
+      reminders.push({ id:Date.now(), plant, time, active:true });
+      save(); showToast('Đã thêm nhắc tưới '+plant+' lúc '+time);
+    }
+    function toggleReminder(id) { const r=reminders.find(x=>x.id===id); if(r){ r.active=!r.active; save(); } }
+    function deleteReminder(id) { reminders=reminders.filter(x=>x.id!==id); save(); showToast('Đã xóa nhắc nhở'); }
+    function save() { localStorage.setItem('vuon_reminders',JSON.stringify(reminders)); renderList(); }
+
+    renderList();
+  </script>
+</body>
+</html>

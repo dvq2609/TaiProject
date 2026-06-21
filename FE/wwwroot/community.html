@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cộng đồng - VƯƠN</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    .post-card { background:#fff; border-radius:.75rem; box-shadow:0 1px 4px rgba(0,0,0,.07); padding:1.25rem; margin-bottom:1rem; }
+    .post-avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,#16a34a,#4ade80); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:.875rem; flex-shrink:0; }
+    .action-btn { display:flex; align-items:center; gap:.4rem; padding:.4rem .75rem; border:none; background:#f9fafb; border-radius:.375rem; cursor:pointer; font-size:.8rem; color:#6b7280; transition:background .15s; }
+    .action-btn:hover { background:#f3f4f6; }
+    .action-btn.liked { color:#ef4444; background:#fef2f2; }
+    .compose-area { background:#fff; border-radius:.75rem; box-shadow:0 1px 4px rgba(0,0,0,.07); padding:1.25rem; margin-bottom:1.5rem; }
+  </style>
+</head>
+<body>
+  <header id="site-header"></header>
+  <div class="page-content" style="max-width:700px;">
+    <h1 style="font-size:1.75rem;font-weight:700;margin-bottom:.5rem;">Cộng đồng VƯƠN</h1>
+    <p style="color:#6b7280;margin-bottom:1.5rem;">Chia sẻ hành trình trồng cây của bạn</p>
+
+    <!-- Compose -->
+    <div class="compose-area" id="compose-box">
+      <div style="display:flex;gap:.75rem;align-items:flex-start;">
+        <div class="post-avatar" id="compose-avatar">?</div>
+        <div style="flex:1;">
+          <textarea id="post-text" class="form-control" rows="3" placeholder="Chia sẻ trải nghiệm trồng cây của bạn..."></textarea>
+          <div style="display:flex;gap:.5rem;margin-top:.75rem;flex-wrap:wrap;">
+            <select id="post-plant" class="form-control" style="max-width:160px;padding:.4rem .75rem;font-size:.8rem;">
+              <option value="">🌱 Gắn thẻ cây</option>
+              <option>Cà chua bi</option>
+              <option>Rau cải xanh</option>
+              <option>Hoa hồng</option>
+              <option>Húng quế</option>
+            </select>
+            <button onclick="submitPost()" class="btn btn-green btn-sm" style="margin-left:auto;">Đăng bài</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter tabs -->
+    <div style="display:flex;gap:.5rem;margin-bottom:1.25rem;border-bottom:1px solid #f3f4f6;padding-bottom:.5rem;">
+      <button class="cat-btn active" onclick="filterPosts('hot',this)" style="background:none;border:none;padding:.4rem .75rem;cursor:pointer;font-weight:600;color:#16a34a;border-bottom:2px solid #16a34a;">🔥 Nổi bật</button>
+      <button class="cat-btn" onclick="filterPosts('new',this)" style="background:none;border:none;padding:.4rem .75rem;cursor:pointer;color:#6b7280;">🆕 Mới nhất</button>
+      <button class="cat-btn" onclick="filterPosts('follow',this)" style="background:none;border:none;padding:.4rem .75rem;cursor:pointer;color:#6b7280;">👥 Đang theo dõi</button>
+    </div>
+
+    <div id="posts-list"></div>
+  </div>
+  <div id="mobile-nav"></div>
+  <footer id="site-footer"></footer>
+  <script src="assets/common.js"></script>
+  <script>
+    let localPosts = [];
+    let likedPosts = new Set(JSON.parse(localStorage.getItem('vuon_liked_posts')||'[]'));
+    const u = Store.getUser();
+
+    if(u) {
+      const init = (u.fullName||u.name||'U').charAt(0).toUpperCase();
+      document.getElementById('compose-avatar').textContent = init;
+    } else {
+      document.getElementById('compose-box').innerHTML = '<p style="text-align:center;color:#6b7280;padding:.5rem;"><a href="login" style="color:#16a34a;font-weight:500;">Đăng nhập</a> để chia sẻ bài viết</p>';
+    }
+
+    function submitPost() {
+      if(!u) { showToast('Vui lòng đăng nhập để đăng bài', 'error'); return; }
+      const text = document.getElementById('post-text').value.trim();
+      const plant = document.getElementById('post-plant').value;
+      if(!text) { showToast('Vui lòng nhập nội dung', 'error'); return; }
+      const now = new Date();
+      localPosts.unshift({
+        id:'local_'+Date.now(),
+        author: u.fullName||u.name||'Bạn',
+        avatar: (u.fullName||u.name||'U').charAt(0).toUpperCase(),
+        content: text,
+        plant: plant||null,
+        date: 'Vừa xong',
+        likes: 0,
+        comments: 0,
+        isLocal: true
+      });
+      document.getElementById('post-text').value='';
+      renderPosts(); showToast('Đã đăng bài!');
+    }
+
+    function toggleLike(id) {
+      if(likedPosts.has(id)) { likedPosts.delete(id); } else { likedPosts.add(id); }
+      localStorage.setItem('vuon_liked_posts', JSON.stringify([...likedPosts]));
+      renderPosts();
+    }
+
+    function filterPosts(type, btn) {
+      document.querySelectorAll('.cat-btn').forEach(b=>{ b.style.color='#6b7280'; b.style.borderBottom='none'; });
+      btn.style.color='#16a34a'; btn.style.borderBottom='2px solid #16a34a';
+      renderPosts();
+    }
+
+    function renderPosts() {
+      const allPosts = [...localPosts, ...COMMUNITY_POSTS];
+      document.getElementById('posts-list').innerHTML = allPosts.map(p=>{
+        const liked = likedPosts.has(p.id);
+        const initials = p.avatar || (p.author||'?').charAt(0).toUpperCase();
+        return `
+          <div class="post-card">
+            <div style="display:flex;gap:.75rem;align-items:flex-start;margin-bottom:.75rem;">
+              <div class="post-avatar">${initials}</div>
+              <div>
+                <p style="font-weight:600;font-size:.875rem;">${p.author}</p>
+                <p style="font-size:.75rem;color:#9ca3af;">${p.date}</p>
+              </div>
+              ${p.plant?`<span style="margin-left:auto;font-size:.75rem;background:#f0fdf4;color:#16a34a;padding:.2rem .6rem;border-radius:2rem;">🌱 ${p.plant}</span>`:''}
+            </div>
+            <p style="font-size:.9rem;color:#374151;line-height:1.6;margin-bottom:.75rem;">${p.content}</p>
+            ${p.image?`<img src="${p.image}" alt="" style="width:100%;border-radius:.5rem;margin-bottom:.75rem;max-height:240px;object-fit:cover;">`:''}
+            <div style="display:flex;gap:.5rem;">
+              <button class="action-btn ${liked?'liked':''}" onclick="toggleLike('${p.id}')">
+                ❤️ ${(p.likes||0)+(liked?1:0)}
+              </button>
+              <button class="action-btn">💬 ${p.comments||0}</button>
+              <button class="action-btn" onclick="showToast('Đã chia sẻ!')">↗ Chia sẻ</button>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    renderPosts();
+  </script>
+</body>
+</html>

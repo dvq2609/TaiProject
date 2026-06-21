@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog - VƯƠN</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    .blog-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:1.5rem; }
+    .blog-card { background:#fff; border-radius:.75rem; overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,.08); cursor:pointer; transition:transform .2s; }
+    .blog-card:hover { transform:translateY(-3px); box-shadow:0 4px 12px rgba(0,0,0,.12); }
+    .blog-img { width:100%; height:160px; object-fit:cover; background:#f0fdf4; display:flex; align-items:center; justify-content:center; font-size:3rem; }
+    .blog-body { padding:1.25rem; }
+    .blog-tag { display:inline-block; padding:.2rem .6rem; background:#dcfce7; color:#16a34a; border-radius:.25rem; font-size:.7rem; font-weight:600; margin-bottom:.5rem; }
+    .cat-filter { display:flex; gap:.5rem; flex-wrap:wrap; margin-bottom:1.5rem; }
+    .cat-btn { padding:.4rem 1rem; border:1px solid #e5e7eb; border-radius:2rem; background:#fff; cursor:pointer; font-size:.875rem; transition:all .2s; }
+    .cat-btn.active { border-color:#16a34a; background:#f0fdf4; color:#16a34a; font-weight:500; }
+  </style>
+</head>
+<body>
+  <header id="site-header"></header>
+  <div class="page-content">
+    <h1 style="font-size:1.75rem;font-weight:700;margin-bottom:.5rem;">Blog Trồng Cây</h1>
+    <p style="color:#6b7280;margin-bottom:1.5rem;">Kiến thức, mẹo vặt và câu chuyện từ cộng đồng VƯƠN</p>
+
+    <div class="cat-filter">
+      <button class="cat-btn active" onclick="filterBlog('all',this)">Tất cả</button>
+      <button class="cat-btn" onclick="filterBlog('tips',this)">Mẹo trồng cây</button>
+      <button class="cat-btn" onclick="filterBlog('guide',this)">Hướng dẫn</button>
+      <button class="cat-btn" onclick="filterBlog('story',this)">Câu chuyện</button>
+      <button class="cat-btn" onclick="filterBlog('news',this)">Tin tức</button>
+    </div>
+
+    <div class="blog-grid" id="blog-grid"></div>
+  </div>
+  <div id="mobile-nav"></div>
+  <footer id="site-footer"></footer>
+  <script src="assets/common.js"></script>
+  <script>
+    const EXTRA_POSTS = [
+      { id:'b4', title:'5 loại rau dễ trồng nhất cho người mới bắt đầu', category:'guide', emoji:'🥬', date:'10/06/2026', readTime:'5 phút', summary:'Rau cải, húng quế, xà lách... những loại rau này cực dễ chăm, phù hợp với ai mới tập trồng cây tại nhà.' },
+      { id:'b5', title:'Cách làm giàn leo cho cây cà chua ban công', category:'tips', emoji:'🍅', date:'08/06/2026', readTime:'7 phút', summary:'Hướng dẫn chi tiết cách làm giàn leo đơn giản, tiết kiệm chi phí để cà chua leo tốt hơn trên ban công nhỏ.' },
+      { id:'b6', title:'Sâu bệnh mùa mưa - nhận biết và phòng tránh', category:'guide', emoji:'🐛', date:'05/06/2026', readTime:'8 phút', summary:'Mùa mưa là thời điểm sâu bệnh phát triển mạnh. Học cách nhận biết sớm và xử lý hiệu quả.' },
+      { id:'b7', title:'Câu chuyện: Từ ban công trống đến vườn rau xanh tươi', category:'story', emoji:'🏠', date:'01/06/2026', readTime:'4 phút', summary:'Hành trình 3 tháng biến ban công 5m² thành vườn rau đủ cho gia đình 4 người của chị Lan Anh.' },
+      { id:'b8', title:'VƯƠN ra mắt tính năng AI chẩn đoán bệnh cây', category:'news', emoji:'🤖', date:'20/05/2026', readTime:'3 phút', summary:'Tính năng mới cho phép người dùng chụp ảnh lá cây để AI tự động phát hiện bệnh và đề xuất giải pháp.' }
+    ];
+
+    const allPosts = [...BLOG_POSTS, ...EXTRA_POSTS];
+    let currentCat = 'all';
+
+    function filterBlog(cat, btn) {
+      document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      currentCat = cat;
+      renderBlog();
+    }
+
+    function renderBlog() {
+      const posts = currentCat==='all' ? allPosts : allPosts.filter(p=>p.category===currentCat);
+      document.getElementById('blog-grid').innerHTML = posts.map(p=>`
+        <div class="blog-card" onclick="location.href='blog-detail?id=${p.id}'">
+          <div class="blog-img">${p.emoji||'🌱'}</div>
+          <div class="blog-body">
+            <span class="blog-tag">${p.category==='guide'?'Hướng dẫn':p.category==='tips'?'Mẹo vặt':p.category==='story'?'Câu chuyện':'Tin tức'}</span>
+            <h3 style="font-size:.95rem;font-weight:700;margin-bottom:.5rem;line-height:1.4;">${p.title}</h3>
+            <p style="font-size:.8rem;color:#6b7280;line-height:1.5;margin-bottom:.75rem;">${p.summary}</p>
+            <div style="font-size:.75rem;color:#9ca3af;display:flex;justify-content:space-between;">
+              <span>${p.date}</span>
+              <span>⏱ ${p.readTime||'5 phút'}</span>
+            </div>
+          </div>
+        </div>`).join('');
+    }
+
+    renderBlog();
+  </script>
+</body>
+</html>

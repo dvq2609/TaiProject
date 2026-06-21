@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chỉnh sửa hồ sơ - VƯƠN</title>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <header id="site-header"></header>
+  <div class="page-content" style="max-width:500px;">
+    <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem;">
+      <a href="profile" style="text-decoration:none;color:#6b7280;font-size:1.25rem;">‹</a>
+      <h1 style="font-size:1.5rem;font-weight:700;">Chỉnh sửa hồ sơ</h1>
+    </div>
+
+    <!-- Avatar -->
+    <div style="text-align:center;margin-bottom:1.5rem;">
+      <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#16a34a,#4ade80);display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:700;color:#fff;margin:0 auto .75rem;" id="avatar-display">?</div>
+      <button style="font-size:.8rem;color:#16a34a;background:none;border:none;cursor:pointer;">Đổi ảnh đại diện</button>
+    </div>
+
+    <div class="card card-pad">
+      <div class="form-group">
+        <label>Họ và tên</label>
+        <input type="text" id="fullName" class="form-control" placeholder="Nhập họ và tên">
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="email" class="form-control" placeholder="email@example.com" disabled style="background:#f9fafb;color:#9ca3af;">
+        <small style="color:#9ca3af;">Email không thể thay đổi</small>
+      </div>
+      <div class="form-group">
+        <label>Số điện thoại</label>
+        <input type="tel" id="phone" class="form-control" placeholder="0912 345 678">
+      </div>
+      <div class="form-group">
+        <label>Địa chỉ</label>
+        <input type="text" id="address" class="form-control" placeholder="Số nhà, đường, quận...">
+      </div>
+      <div class="form-group">
+        <label>Giới thiệu bản thân</label>
+        <textarea id="bio" class="form-control" rows="3" placeholder="Chia sẻ đôi điều về bạn..."></textarea>
+      </div>
+      <div id="err-msg" class="alert alert-error" style="display:none;"></div>
+      <button onclick="saveProfile()" class="btn btn-green btn-full">Lưu thay đổi</button>
+    </div>
+  </div>
+  <div id="mobile-nav"></div>
+  <footer id="site-footer"></footer>
+  <script src="assets/common.js"></script>
+  <script>
+    requireAuth();
+    const u = Store.getUser();
+    if(u) {
+      document.getElementById('fullName').value = u.fullName || u.name || '';
+      document.getElementById('email').value = u.email || '';
+      document.getElementById('phone').value = u.phone || '';
+      document.getElementById('address').value = u.address || '';
+      document.getElementById('bio').value = u.bio || '';
+      document.getElementById('avatar-display').textContent = (u.fullName||u.name||'U').charAt(0).toUpperCase();
+    }
+
+    function saveProfile() {
+      const fullName = document.getElementById('fullName').value.trim();
+      const err = document.getElementById('err-msg');
+      if(!fullName) { err.style.display='block'; err.textContent='Vui lòng nhập họ và tên'; return; }
+      err.style.display='none';
+      const updated = { ...u, fullName, name:fullName, phone:document.getElementById('phone').value, address:document.getElementById('address').value, bio:document.getElementById('bio').value };
+      Store.setUser(updated);
+      showToast('Đã lưu hồ sơ thành công!');
+      setTimeout(()=>location.href='profile', 1000);
+    }
+  </script>
+</body>
+</html>

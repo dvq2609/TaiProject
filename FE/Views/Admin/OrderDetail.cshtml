@@ -1,0 +1,118 @@
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng";
+}
+
+@section Styles {
+    <style>
+        .detail-grid{display:grid;grid-template-columns:2fr 1fr;gap:1.5rem;} 
+        @@media(max-width:768px){.detail-grid{grid-template-columns:1fr;}}
+    </style>
+}
+
+<div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem;">
+  <a href="orders" style="color:#6b7280;text-decoration:none;font-size:1.25rem;">&lsaquo; Quay lại</a>
+  <div>
+    <h1 id="page-title" style="font-size:1.5rem;font-weight:800;">Chi tiết đơn hàng</h1>
+    <p id="page-date" style="color:#6b7280;font-size:.875rem;"></p>
+  </div>
+  <div style="margin-left:auto;display:flex;gap:.5rem;">
+    <a id="update-link" href="#" class="btn btn-green">Cập nhật trạng thái</a>
+  </div>
+</div>
+
+<div class="detail-grid" id="detail-content">
+  <div style="text-align:center;padding:3rem;color:#9ca3af;">Đang tải...</div>
+</div>
+
+@section Scripts {
+    <script>
+        const id = getParam('id');
+
+        async function loadOrderDetail() {
+          const contentEl = document.getElementById('detail-content');
+          try {
+            const order = await API.getOrder(id);
+            
+            document.getElementById('page-title').textContent = 'Đơn hàng #' + order.orderCode;
+            document.getElementById('page-date').textContent = 'Đặt ngày ' + new Date(order.createdAt).toLocaleString('vi-VN');
+            document.getElementById('update-link').href = 'update-order-status?id=' + order.orderId;
+
+            const items = order.items || [];
+            const subtotal = items.reduce((sum, item) => sum + item.subtotal, 0);
+
+            contentEl.innerHTML = `
+              <div>
+                <div class="card card-pad" style="margin-bottom:1rem;">
+                  <h2 style="font-weight:700;margin-bottom:1rem;">Sản phẩm đặt</h2>
+                  <table style="width:100%;border-collapse:collapse;">
+                    <thead><tr>
+                      <th style="text-align:left;padding:.5rem;border-bottom:1px solid #e5e7eb;font-size:.8rem;color:#6b7280;">Sản phẩm</th>
+                      <th style="text-align:center;padding:.5rem;border-bottom:1px solid #e5e7eb;font-size:.8rem;color:#6b7280;">SL</th>
+                      <th style="text-align:right;padding:.5rem;border-bottom:1px solid #e5e7eb;font-size:.8rem;color:#6b7280;">Thành tiền</th>
+                    </tr></thead>
+                    <tbody>
+                      ${items.map(item => `
+                        <tr>
+                          <td style="padding:.75rem .5rem;border-bottom:1px solid #f9fafb;display:flex;align-items:center;gap:.75rem;">
+                            ${item.productImage ? `<img src="${item.productImage}" style="width:40px;height:40px;border-radius:.375rem;object-fit:cover;">` : ''}
+                            <p style="font-weight:500;font-size:.875rem;">${item.productName}</p>
+                          </td>
+                          <td style="text-align:center;padding:.75rem .5rem;border-bottom:1px solid #f9fafb;">x${item.quantity}</td>
+                          <td style="text-align:right;padding:.75rem .5rem;border-bottom:1px solid #f9fafb;font-weight:600;">${fmt(item.subtotal)}</td>
+                        </tr>`).join('')}
+                    </tbody>
+                  </table>
+                  <div style="display:flex;justify-content:space-between;padding:.75rem 0 0;font-size:.875rem;color:#6b7280;border-top:1px solid #e5e7eb;margin-top:.5rem;">
+                    <span>Tạm tính</span><span>${fmt(subtotal)}</span>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;padding:.5rem 0;font-size:.875rem;color:#6b7280;">
+                    <span>Phí giao hàng</span><span>${order.shippingFee > 0 ? fmt(order.shippingFee) : 'Miễn phí'}</span>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;padding:.75rem 0 0;font-weight:700;border-top:1px solid #e5e7eb;margin-top:.25rem;">
+                    <span>Tổng cộng</span><span style="color:#16a34a;font-size:1.1rem;">${fmt(order.totalAmount)}</span>
+                  </div>
+                </div>
+              </div>
+        
+              <div>
+                <div class="card card-pad" style="margin-bottom:1rem;">
+                  <h2 style="font-weight:700;margin-bottom:1rem;">Trạng thái đơn</h2>
+                  <div style="text-align:center;padding:.75rem;">${statusLabel(order.status)}</div>
+                </div>
+        
+                <div class="card card-pad" style="margin-bottom:1rem;">
+                  <h2 style="font-weight:700;margin-bottom:1rem;">Thông tin khách hàng</h2>
+                  <div style="display:flex;flex-direction:column;gap:.5rem;font-size:.875rem;">
+                    <div style="display:flex;gap:.5rem;"><span style="color:#6b7280;min-width:60px;">Tên:</span><span style="font-weight:500;">${order.receiverName || 'Guest'}</span></div>
+                    <div style="display:flex;gap:.5rem;"><span style="color:#6b7280;min-width:60px;">SĐT:</span><span>${order.receiverPhone || '--'}</span></div>
+                    <div style="display:flex;gap:.5rem;"><span style="color:#6b7280;min-width:60px;">Địa chỉ:</span><span>${order.shippingAddress || '--'}</span></div>
+                    ${order.note ? `<div style="display:flex;gap:.5rem;font-style:italic;"><span style="color:#6b7280;min-width:60px;">Ghi chú:</span><span>${order.note}</span></div>` : ''}
+                  </div>
+                </div>
+        
+                <div class="card card-pad">
+                  <h2 style="font-weight:700;margin-bottom:1rem;">Thanh toán</h2>
+                  <div style="font-size:.875rem;">
+                    <div style="display:flex;justify-content:space-between;padding:.4rem 0;"><span style="color:#6b7280;">Phương thức</span><span style="font-weight:500;">${order.paymentMethod.toUpperCase()}</span></div>
+                    <div style="display:flex;justify-content:space-between;padding:.4rem 0;">
+                      <span style="color:#6b7280;">Trạng thái</span>
+                      <span class="badge ${order.paymentStatus === 'Paid' ? 'badge-green' : 'badge-yellow'}">${order.paymentStatus}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>`;
+          } catch (e) {
+            contentEl.innerHTML = `<div class="alert alert-error">Lỗi khi tải chi tiết đơn hàng: ${e.message}</div>`;
+          }
+        }
+
+        function statusLabel(s) {
+          const lower = s.toLowerCase();
+          const map = { pending: 'Chờ xác nhận', confirmed: 'Đã xác nhận', shipping: 'Đang giao', delivered: 'Đã giao', cancelled: 'Đã hủy' };
+          const cls = { pending: 'badge-yellow', confirmed: 'badge-blue', shipping: 'badge-orange', delivered: 'badge-green', cancelled: 'badge-red' };
+          return `<span class="badge ${cls[lower] || 'badge-gray'}">${map[lower] || s}</span>`;
+        }
+
+        loadOrderDetail();
+    </script>
+}

@@ -1,0 +1,93 @@
+@{
+    ViewData["Title"] = "Giỏ hàng";
+}
+
+@section Styles {
+    <style>
+        .cart-layout { display:grid; grid-template-columns:1fr 340px; gap:2rem; }
+        @@media(max-width:900px){ .cart-layout { grid-template-columns:1fr; } }
+        .cart-item { display:flex; gap:1rem; padding:1.25rem; background:#fff; border-radius:.75rem; box-shadow:0 1px 3px rgba(0,0,0,.08); margin-bottom:1rem; }
+        .cart-item img { width:96px; height:96px; border-radius:.5rem; object-fit:cover; flex-shrink:0; }
+        .cart-item-body { flex:1; }
+        .qty-ctrl { display:flex; align-items:center; gap:.5rem; }
+        .qty-btn { width:32px; height:32px; border:1px solid #d1d5db; border-radius:.375rem; background:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+        .summary-card { background:#fff; border-radius:.75rem; box-shadow:0 1px 3px rgba(0,0,0,.08); padding:1.5rem; position:sticky; top:80px; }
+        .summary-row { display:flex; justify-content:space-between; padding:.5rem 0; color:#6b7280; font-size:.9rem; }
+        .summary-total { display:flex; justify-content:space-between; padding:.75rem 0; border-top:1px solid #e5e7eb; font-weight:700; font-size:1.1rem; }
+    </style>
+}
+
+<div class="page-content">
+    <h1 style="font-size:1.75rem;font-weight:700;margin-bottom:1.5rem;">Giỏ hàng</h1>
+    <div id="cart-content"></div>
+</div>
+
+@section Scripts {
+    <script>
+        function renderCart() {
+          const cart = Store.getCart();
+          const el = document.getElementById('cart-content');
+
+          if(cart.length===0) {
+            el.innerHTML = `
+              <div style="text-align:center;padding:4rem 0;">
+                <svg width="64" height="64" fill="none" stroke="#9ca3af" stroke-width="2" viewBox="0 0 24 24" style="margin:0 auto 1rem;display:block;"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 001.94 1.61h9.72a2 2 0 001.94-1.61L23 6H6"/></svg>
+                <h2 style="font-size:1.25rem;font-weight:700;margin-bottom:.5rem;">Giỏ hàng trống</h2>
+                <p style="color:#6b7280;margin-bottom:1.5rem;">Hãy thêm sản phẩm vào giỏ hàng của bạn</p>
+                <a href="home" class="btn btn-green">Tiếp tục mua sắm</a>
+              </div>`;
+            return;
+          }
+
+          const subtotal = Store.getCartTotal();
+          const shipping = subtotal>=500000?0:30000;
+          const total = subtotal+shipping;
+
+          el.innerHTML = `
+            <div class="cart-layout">
+              <div id="cart-items">
+                ${cart.map(item=>`
+                  <div class="cart-item">
+                    <img src="${item.product.image}" alt="${item.product.name}">
+                    <div class="cart-item-body">
+                      <a href="product-detail?id=${item.product.id}" style="font-weight:500;color:#111827;display:block;margin-bottom:.25rem;">${item.product.name}</a>
+                      <p style="font-size:.8rem;color:#6b7280;margin-bottom:.75rem;">${item.product.description}</p>
+                      <div style="display:flex;align-items:center;justify-content:space-between;">
+                        <div class="qty-ctrl">
+                          <button class="qty-btn" onclick="updateQty('${item.productId}',${item.quantity-1})">−</button>
+                          <span style="min-width:2rem;text-align:center;font-weight:600;">${item.quantity}</span>
+                          <button class="qty-btn" onclick="updateQty('${item.productId}',${item.quantity+1})">+</button>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:1rem;">
+                          <span style="font-size:1.1rem;font-weight:700;color:#16a34a;">${fmt(item.product.price*item.quantity)}</span>
+                          <button onclick="removeItem('${item.productId}')" style="background:none;border:none;cursor:pointer;color:#ef4444;display:flex;align-items:center;">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>`).join('')}
+              </div>
+
+              <div class="summary-card">
+                <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:1.5rem;">Tóm tắt đơn hàng</h2>
+                <div class="summary-row"><span>Tạm tính:</span><span>${fmt(subtotal)}</span></div>
+                <div class="summary-row"><span>Phí vận chuyển:</span><span>${shipping===0?'Miễn phí':fmt(shipping)}</span></div>
+                ${shipping===0?'<p style="font-size:.8rem;color:#16a34a;margin:.25rem 0;">🎉 Bạn được miễn phí vận chuyển!</p>':''}
+                ${shipping>0?`<p style="font-size:.8rem;color:#2563eb;margin:.25rem 0;">Mua thêm ${fmt(500000-subtotal)} để được miễn phí ship</p>`:''}
+                <div class="summary-total"><span>Tổng cộng:</span><span style="color:#16a34a;">${fmt(total)}</span></div>
+                <a href="checkout-shipping" class="btn btn-green btn-full" style="margin-top:1rem;">
+                  Thanh toán
+                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </a>
+                <a href="home" style="display:block;text-align:center;color:#16a34a;margin-top:1rem;font-size:.875rem;">Tiếp tục mua sắm</a>
+              </div>
+            </div>`;
+        }
+
+        function updateQty(pid, qty) { Store.updateCartQty(pid,qty); renderCart(); }
+        function removeItem(pid) { Store.removeFromCart(pid); renderCart(); }
+
+        renderCart();
+    </script>
+}

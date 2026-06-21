@@ -1,0 +1,182 @@
+@{
+    ViewData["Title"] = "Quản lý sản phẩm";
+}
+
+@section Styles {
+    <style>
+        .data-table{width:100%;border-collapse:collapse;background:#fff;border-radius:.75rem;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.07);}
+        .data-table th{text-align:left;padding:.75rem 1rem;background:#f9fafb;font-size:.8rem;font-weight:600;color:#6b7280;border-bottom:1px solid #e5e7eb;}
+        .data-table td{padding:.75rem 1rem;border-bottom:1px solid #f9fafb;font-size:.875rem;vertical-align:middle;}
+        .data-table tr:hover td{background:#fafafa;}
+        .search-bar{display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap;}
+        .search-bar input{flex:1;min-width:160px;padding:.6rem 1rem;border:1px solid #e5e7eb;border-radius:.5rem;font-size:.875rem;outline:none;}
+        .search-bar input:focus{border-color:#16a34a;}
+        .search-bar select{padding:.6rem .75rem;border:1px solid #e5e7eb;border-radius:.5rem;font-size:.875rem;outline:none;background:#fff;}
+        .sku-cell{font-family:monospace;font-size:.75rem;color:#6b7280;background:#f3f4f6;padding:.15rem .4rem;border-radius:.25rem;}
+    </style>
+}
+
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:.75rem;">
+  <div>
+    <h1 style="font-size:1.5rem;font-weight:800;">Quản lý sản phẩm</h1>
+    <p style="color:#6b7280;font-size:.875rem;" id="prod-count-text"></p>
+  </div>
+  <a href="product-form" class="btn btn-green">+ Thêm sản phẩm</a>
+</div>
+
+<div class="search-bar">
+  <input type="text" id="search-prod" placeholder="Tìm tên hoặc SKU..." oninput="onSearchChange()">
+  <select id="cat-filter" onchange="onCatChange()">
+    <option value="">Tất cả danh mục</option>
+  </select>
+</div>
+
+<div style="overflow-x:auto;">
+  <table class="data-table">
+    <thead><tr>
+      <th>#</th><th>Ảnh</th><th>Tên sản phẩm</th><th>Danh mục</th>
+      <th>Giá bán</th><th>Tồn kho</th><th>SKU</th><th>Trạng thái</th><th>Hành động</th>
+    </tr></thead>
+    <tbody id="product-tbody"><tr><td colspan="9" style="text-align:center;padding:2rem;color:#9ca3af;">Đang tải...</td></tr></tbody>
+  </table>
+</div>
+
+<!-- Pagination -->
+<div id="pagination-bar" style="display:flex;justify-content:center;gap:.5rem;margin-top:1rem;"></div>
+
+@section Scripts {
+    <script>
+        let productsList = [];
+        let categoriesList = [];
+        let currentPage = 1;
+        let totalPages = 1;
+        const PAGE_SIZE = 20;
+
+        // Debounce search
+        let searchTimer = null;
+        function onSearchChange() {
+          clearTimeout(searchTimer);
+          searchTimer = setTimeout(() => { currentPage = 1; loadProducts(); }, 400);
+        }
+        function onCatChange() { currentPage = 1; loadProducts(); }
+
+        async function initPage() {
+          // Pre-fill search from URL param (set by admin header search)
+          const urlSearch = new URLSearchParams(window.location.search).get('search');
+          if (urlSearch) {
+            const searchInput = document.getElementById('search-prod');
+            if (searchInput) searchInput.value = urlSearch;
+            // Also sync back to admin header search input
+            const adminInput = document.getElementById('admin-search-input');
+            if (adminInput) {
+              adminInput.value = urlSearch;
+              const clrBtn = document.getElementById('admin-search-clear');
+              if (clrBtn) clrBtn.style.display = 'flex';
+            }
+          }
+
+          // Load Categories for filter dropdown
+          try {
+            categoriesList = await API.getCategories();
+            const filterSelect = document.getElementById('cat-filter');
+            if (filterSelect) {
+              filterSelect.innerHTML = '<option value="">Tất cả danh mục</option>' +
+                categoriesList.map(c => `<option value="${c.categoryId}">${c.name}</option>`).join('');
+            }
+          } catch(e) {
+            console.error('Lỗi tải danh mục:', e);
+          }
+
+          await loadProducts();
+        }
+
+        async function loadProducts() {
+          const tbody = document.getElementById('product-tbody');
+          tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:2rem;color:#9ca3af;">Đang tải...</td></tr>';
+
+          const search = document.getElementById('search-prod').value.trim() || undefined;
+          const catId  = document.getElementById('cat-filter').value || undefined;
+
+          try {
+            const params = new URLSearchParams({ page: currentPage, pageSize: PAGE_SIZE });
+            if (search) params.set('search', search);
+            if (catId) params.set('categoryId', catId);
+
+            const data = await apiFetch('/products?' + params);
+            productsList = (data.products || []).map(p => API._mapProduct(p));
+            totalPages   = data.totalPages || 1;
+
+            const countLabel = document.getElementById('prod-count-text');
+            if (countLabel) countLabel.textContent = data.totalCount + ' sản phẩm';
+
+            renderTable();
+            renderPagination();
+          } catch (e) {
+            tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:2rem;color:#ef4444;">Lỗi tải sản phẩm: ${e.message}</td></tr>`;
+          }
+        }
+
+        function renderTable() {
+          const tbody = document.getElementById('product-tbody');
+          if (!productsList.length) {
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:2rem;color:#9ca3af;">Không có sản phẩm nào</td></tr>';
+            return;
+          }
+
+          tbody.innerHTML = productsList.map((p, i) => {
+            const rowNum = (currentPage - 1) * PAGE_SIZE + i + 1;
+            const imgSrc = p.image || `https://placehold.co/44x44/f0fdf4/16a34a?text=${encodeURIComponent((p.name||'?')[0])}`;
+            const inStockBadge = p.inStock
+              ? '<span class="badge badge-green">Còn hàng</span>'
+              : '<span class="badge badge-red">Hết hàng</span>';
+            const statusBadge = p.status
+              ? '' // active product — already shown by inStock
+              : '<span class="badge badge-red" style="margin-left:.25rem;">Ẩn</span>';
+            const skuCell = p.sku ? `<span class="sku-cell">${p.sku}</span>` : '<span style="color:#d1d5db;">—</span>';
+
+            return `
+              <tr>
+                <td style="color:#9ca3af;">${rowNum}</td>
+                <td><img src="${imgSrc}" alt="${p.name}" style="width:44px;height:44px;object-fit:cover;border-radius:.375rem;" onerror="this.src='https://placehold.co/44x44/f0fdf4/16a34a?text=${encodeURIComponent((p.name||'?')[0])}'"></td>
+                <td style="font-weight:600;max-width:200px;">${p.name}</td>
+                <td><span class="badge badge-green" style="font-size:.7rem;">${p.categoryName || p.category || '—'}</span></td>
+                <td style="font-weight:600;color:#16a34a;">${fmt(p.price)}</td>
+                <td>${p.stock ?? 0}</td>
+                <td>${skuCell}</td>
+                <td>${inStockBadge}${statusBadge}</td>
+                <td>
+                  <div style="display:flex;gap:.25rem;">
+                    <a href="product-form?id=${p.productId}" class="btn btn-outline" style="font-size:.75rem;padding:.3rem .6rem;">Sửa</a>
+                    <button onclick="deleteProduct(${p.productId}, '${p.name.replace(/'/g,"\\\'")}')" class="btn" style="font-size:.75rem;padding:.3rem .6rem;background:#fee2e2;color:#ef4444;border:none;cursor:pointer;">Xóa</button>
+                  </div>
+                </td>
+              </tr>`;
+          }).join('');
+        }
+
+        function renderPagination() {
+          const bar = document.getElementById('pagination-bar');
+          if (!bar || totalPages <= 1) { if(bar) bar.innerHTML = ''; return; }
+          let html = '';
+          for (let p = 1; p <= totalPages; p++) {
+            html += `<button onclick="gotoPage(${p})" class="btn" style="min-width:36px;padding:.4rem .6rem;${p===currentPage?'background:#16a34a;color:#fff;':'background:#f3f4f6;color:#374151;'}">${p}</button>`;
+          }
+          bar.innerHTML = html;
+        }
+
+        function gotoPage(p) { currentPage = p; loadProducts(); }
+
+        async function deleteProduct(id, name) {
+          if (!confirm(`Bạn có chắc muốn xóa sản phẩm "${name}"?`)) return;
+          const result = await API.deleteProduct(id);
+          if (result.ok) {
+            showToast('Đã xóa sản phẩm thành công!');
+            loadProducts();
+          } else {
+            showToast('Lỗi khi xóa: ' + (result.error || 'Không xác định'), 'error');
+          }
+        }
+
+        initPage();
+    </script>
+}

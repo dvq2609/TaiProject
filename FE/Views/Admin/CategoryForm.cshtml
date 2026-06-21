@@ -1,0 +1,77 @@
+@{
+    ViewData["Title"] = "Danh mục";
+}
+
+@section Styles {
+    <style>
+        .form-container{max-width:600px;margin:0 auto;}
+    </style>
+}
+
+<div class="form-container">
+  <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem;">
+    <a href="categories" style="color:#6b7280;text-decoration:none;font-size:1.25rem;">&lsaquo; Quay lại</a>
+    <h1 id="form-title" style="font-size:1.5rem;font-weight:800;">Thêm danh mục</h1>
+  </div>
+
+  <div class="card card-pad" style="margin-bottom:1.5rem;">
+    <h2 style="font-weight:700;margin-bottom:1rem;">Thông tin danh mục</h2>
+    <div class="form-group">
+      <label>Tên danh mục *</label>
+      <input type="text" id="f-name" class="form-control" placeholder="VD: Cây ăn trái, Đất trồng...">
+    </div>
+  </div>
+
+  <div style="display:flex;gap:.75rem;">
+    <button onclick="saveCategory()" class="btn btn-green">💾 Lưu danh mục</button>
+    <a href="categories" class="btn btn-outline" style="text-align:center;">Hủy</a>
+  </div>
+</div>
+
+@section Scripts {
+    <script>
+        const editId = getParam('id');
+        let category = null;
+
+        async function initForm() {
+          if (editId) {
+            document.getElementById('form-title').textContent = 'Chỉnh sửa danh mục';
+            try {
+              category = await API.getCategory(editId);
+              if (category) {
+                document.getElementById('f-name').value = category.name;
+              } else {
+                showToast('Không tìm thấy danh mục', 'error');
+                setTimeout(() => location.href = 'categories', 1500);
+              }
+            } catch (e) {
+              showToast('Lỗi khi tải thông tin danh mục', 'error');
+            }
+          }
+        }
+
+        async function saveCategory() {
+          const name = document.getElementById('f-name').value.trim();
+          if (!name) {
+            showToast('Vui lòng nhập tên danh mục', 'error');
+            return;
+          }
+
+          let result;
+          if (editId) {
+            result = await API.updateCategory(editId, name);
+          } else {
+            result = await API.createCategory(name);
+          }
+
+          if (result && result.error) {
+            showToast(result.error, 'error');
+          } else {
+            showToast(editId ? 'Đã cập nhật danh mục thành công!' : 'Đã thêm danh mục mới thành công!');
+            setTimeout(() => location.href = 'categories', 1200);
+          }
+        }
+
+        initForm();
+    </script>
+}

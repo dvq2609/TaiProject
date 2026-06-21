@@ -1,0 +1,40 @@
+@{
+    ViewData["Title"] = "Đặt hàng thành công";
+}
+
+@section Styles {
+    <style>
+        body { background: #f9fafb; }
+        .success-card {
+          max-width: 500px;
+          margin: 4rem auto;
+          text-align: center;
+        }
+    </style>
+}
+
+<div class="page-content">
+    <div class="card card-pad success-card">
+      <div style="width: 80px;height: 80px;background: #f0fdf4;border-radius: 50%;display: flex;align-items: center;justify-content: center;margin: 0 auto 1.5rem;">
+        <svg width="48" height="48" fill="none" stroke="#16a34a" stroke-width="2" viewBox="0 0 24 24">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      
+      <h1 style="font-size: 1.75rem;font-weight: 700;margin-bottom: .5rem;color: #16a34a;">Đặt hàng thành công!</h1>
+      <p style="color: #4b5563;margin-bottom: 2rem;">Cảm ơn bạn đã lựa chọn mua sắm tại VƯƠN. Đơn hàng của bạn đang được xử lý.</p>
+      
+      <div style="display: flex;flex-direction: column;gap: .75rem;">
+        <a href="orders" class="btn btn-green">Đơn hàng của tôi</a>
+        <a href="home" class="btn btn-gray">Tiếp tục mua sắm</a>
+      </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Clean checkout info from localStorage
+        localStorage.removeItem('vuon_shipping');
+        localStorage.removeItem('vuon_payment');
+    </script>
+}

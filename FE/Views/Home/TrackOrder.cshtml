@@ -1,0 +1,131 @@
+@{
+    ViewData["Title"] = "Theo dõi đơn hàng";
+}
+
+<div class="page-content" style="max-width:700px;">
+    <h1 style="font-size:1.75rem;font-weight:700;margin-bottom:1.5rem;">Theo dõi đơn hàng</h1>
+
+    <div class="card card-pad" style="margin-bottom:1.5rem;">
+      <div style="display:flex;gap:.5rem;margin-bottom:1rem;">
+        <input type="text" id="order-id" class="form-control" placeholder="Nhập mã đơn hàng (VD: 1718873099999)">
+        <button onclick="searchOrder()" class="btn btn-green">Tìm kiếm</button>
+      </div>
+      <div id="track-result"></div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        if (!requireAuth()) {
+          throw new Error("Auth required");
+        }
+
+        function renderTrackDetails(order) {
+          const res = document.getElementById('track-result');
+          
+          const status = order.status.toLowerCase();
+          const isCancelled = status === 'cancelled';
+          
+          // Determine steps completed
+          const steps = [
+            { label: 'Đã đặt hàng', done: true, date: new Date(order.createdAt).toLocaleString('vi-VN') },
+            { label: 'Đã xác nhận', done: status !== 'pending' && !isCancelled, date: order.updatedAt ? new Date(order.updatedAt).toLocaleString('vi-VN') : '' },
+            { label: 'Đang giao hàng', done: (status === 'shipping' || status === 'delivered') && !isCancelled },
+            { label: 'Hoàn thành', done: status === 'delivered' }
+          ];
+
+          let stepsHtml = '';
+          if (isCancelled) {
+            stepsHtml = `
+              <div style="padding:1.5rem;background:#fee2e2;color:#991b1b;border-radius:.5rem;margin-bottom:1.5rem;text-align:center;font-weight:600;">
+                ❌ Đơn hàng này đã bị hủy bỏ.
+              </div>`;
+          } else {
+            stepsHtml = `
+              <div class="order-steps" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
+                ${steps.map((s, i) => `
+                  <div style="flex:1;min-width:100px;text-align:center;position:relative;">
+                    <div style="width:36px;height:36px;border-radius:50%;background:${s.done ? '#16a34a' : '#e5e7eb'};color:${s.done ? '#fff' : '#9ca3af'};border:2px solid ${s.done ? '#16a34a' : '#e5e7eb'};display:flex;align-items:center;justify-content:center;margin:0 auto;font-weight:700;">
+                      ${s.done ? '✓' : (i + 1)}
+                    </div>
+                    <div style="font-size:.875rem;font-weight:600;margin-top:.5rem;color:${s.done ? '#16a34a' : '#9ca3af'};">${s.label}</div>
+                    ${s.date ? `<div style="font-size:.7rem;color:#9ca3af;margin-top:.25rem;">${s.date}</div>` : ''}
+                  </div>
+                `).join('<div style="flex:1;height:2px;background:#e5e7eb;margin-bottom:20px;min-width:30px;"></div>')}
+              </div>`;
+          }
+
+          res.innerHTML = `
+            <div class="card card-pad" style="border: 1px solid #e5e7eb;margin-top:1.5rem;">
+              <h2 style="font-size:1.25rem;font-weight:700;margin-bottom:1.5rem;color:#111827;">Chi tiết đơn hàng #${order.orderCode}</h2>
+              
+              ${stepsHtml}
+              
+              <div style="margin-bottom:1.5rem;">
+                <p style="font-size:.9rem;color:#4b5563;margin-bottom:.5rem;">📦 Người nhận: <strong>${order.receiverName}</strong> - ${order.receiverPhone}</p>
+                <p style="font-size:.9rem;color:#4b5563;margin-bottom:.5rem;">📍 Địa chỉ nhận: <strong>${order.shippingAddress}</strong></p>
+                <p style="font-size:.9rem;color:#4b5563;margin-bottom:.5rem;">💳 Thanh toán: <strong>${order.paymentMethod === 'cod' ? 'COD (Nhận hàng trả tiền)' : 'PayOS (QR Chuyển khoản)'}</strong> - Trạng thái: <strong style="color:${order.paymentStatus === 'Paid' ? '#10b981' : '#f59e0b'}">${order.paymentStatus}</strong></p>
+                ${order.note ? `<p style="font-size:.9rem;color:#4b5563;font-style:italic;">Ghi chú: ${order.note}</p>` : ''}
+              </div>
+
+              <div style="border-top:1px solid #f3f4f6;padding-top:1rem;margin-bottom:1rem;">
+                <h3 style="font-size:1rem;font-weight:600;margin-bottom:.75rem;color:#374151;">Sản phẩm đã mua</h3>
+                ${order.items.map(item => `
+                  <div style="display:flex;justify-content:space-between;align-items:center;padding:.4rem 0;font-size:.875rem;">
+                    <span style="color:#4b5563;">${item.productName} × ${item.quantity}</span>
+                    <span style="font-weight:600;color:#111827;">${fmt(item.subtotal)}</span>
+                  </div>
+                `).join('')}
+                <div style="display:flex;justify-content:space-between;margin-top:.5rem;padding:.4rem 0;font-size:.9rem;color:#6b7280;">
+                  <span>Phí vận chuyển:</span>
+                  <span>${order.shippingFee === 0 ? 'Miễn phí' : fmt(order.shippingFee)}</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;margin-top:.5rem;padding-top:.5rem;border-top:1px solid #f3f4f6;font-weight:700;font-size:1.1rem;color:#16a34a;">
+                  <span>Tổng cộng:</span>
+                  <span>${fmt(order.totalAmount)}</span>
+                </div>
+              </div>
+              <div style="display:flex;gap:.5rem;">
+                <a href="orders" class="btn btn-outline btn-sm">Quay lại danh sách</a>
+              </div>
+            </div>`;
+        }
+
+        async function searchOrder() {
+          const input = document.getElementById('order-id').value.trim();
+          if (!input) return;
+          
+          const res = document.getElementById('track-result');
+          res.innerHTML = '<div style="text-align:center;padding:2rem;color:#6b7280;">Đang tìm kiếm...</div>';
+          
+          try {
+            const orders = await API.getMyOrders();
+            const order = orders.find(o => o.orderCode.toString() === input || o.orderId.toString() === input);
+            if (!order) {
+              res.innerHTML = '<div class="alert alert-error">Không tìm thấy đơn hàng trong danh sách của bạn. Vui lòng kiểm tra lại mã đơn.</div>';
+              return;
+            }
+            res.innerHTML = '';
+            renderTrackDetails(order);
+          } catch (e) {
+            res.innerHTML = `<div class="alert alert-error">Lỗi khi tải thông tin: ${e.message}</div>`;
+          }
+        }
+
+        // Auto-load if orderId query param exists
+        (async () => {
+          const orderId = getParam('orderId');
+          if (orderId) {
+            const res = document.getElementById('track-result');
+            res.innerHTML = '<div style="text-align:center;padding:2rem;color:#6b7280;">Đang tải thông tin đơn hàng...</div>';
+            try {
+              const order = await API.getOrder(orderId);
+              res.innerHTML = '';
+              renderTrackDetails(order);
+            } catch (e) {
+              res.innerHTML = `<div class="alert alert-error">Lỗi khi tải thông tin đơn hàng: ${e.message}</div>`;
+            }
+          }
+        })();
+    </script>
+}

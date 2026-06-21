@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yêu thích - VƯƠN</title>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <header id="site-header"></header>
+  <div class="page-content">
+    <h1 style="font-size:1.75rem;font-weight:700;margin-bottom:.5rem;">Sản phẩm yêu thích</h1>
+    <p style="color:#6b7280;margin-bottom:1.5rem;" id="fav-count-text"></p>
+    <div id="fav-grid" class="product-grid"></div>
+    <div id="empty-state" style="display:none;text-align:center;padding:4rem 2rem;">
+      <div style="font-size:4rem;margin-bottom:1rem;">💔</div>
+      <h2 style="font-weight:700;margin-bottom:.5rem;">Chưa có sản phẩm yêu thích</h2>
+      <p style="color:#6b7280;margin-bottom:1.5rem;">Khám phá và thêm sản phẩm vào danh sách yêu thích của bạn</p>
+      <a href="products" class="btn btn-green">Khám phá sản phẩm</a>
+    </div>
+  </div>
+  <div id="mobile-nav"></div>
+  <footer id="site-footer"></footer>
+  <script src="assets/common.js"></script>
+  <script>
+    function render() {
+      const favIds = Store.getFavorites();
+      const favProducts = PRODUCTS.filter(p=>favIds.includes(p.id));
+      const grid = document.getElementById('fav-grid');
+      const empty = document.getElementById('empty-state');
+      document.getElementById('fav-count-text').textContent = favIds.length + ' sản phẩm';
+
+      if(favProducts.length===0) {
+        grid.style.display='none';
+        empty.style.display='block';
+        return;
+      }
+      grid.style.display='grid'; empty.style.display='none';
+      grid.innerHTML = favProducts.map(p=>`
+        <div class="product-card">
+          <div style="position:relative;">
+            <img src="${p.image}" alt="${p.name}" class="product-img" onerror="this.src='https://placehold.co/300x200/f0fdf4/16a34a?text=${encodeURIComponent(p.name)}'">
+            <button onclick="removeFav('${p.id}')" style="position:absolute;top:.5rem;right:.5rem;background:#fff;border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:1.1rem;box-shadow:0 1px 3px rgba(0,0,0,.2);" title="Xóa khỏi yêu thích">❤️</button>
+          </div>
+          <div class="product-info">
+            <p class="product-name">${p.name}</p>
+            <div class="product-rating">${stars(p.rating)} <span class="text-muted">(${p.reviewCount})</span></div>
+            <div class="product-footer">
+              <span class="product-price">${fmt(p.price)}</span>
+              <button onclick="addToCartToast('${p.id}')" class="btn btn-green btn-sm">+ Giỏ hàng</button>
+            </div>
+          </div>
+        </div>`).join('');
+    }
+
+    function removeFav(id) {
+      Store.toggleFavorite(id);
+      render();
+      showToast('Đã xóa khỏi yêu thích');
+    }
+
+    render();
+  </script>
+</body>
+</html>

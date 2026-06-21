@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chẩn đoán bệnh cây - VƯƠN</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    .upload-zone { border:2px dashed #d1d5db; border-radius:.75rem; padding:3rem 2rem; text-align:center; cursor:pointer; transition:border .2s; }
+    .upload-zone:hover, .upload-zone.drag { border-color:#16a34a; background:#f0fdf4; }
+    .result-card { background:#fff; border-radius:.75rem; box-shadow:0 1px 3px rgba(0,0,0,.08); padding:1.5rem; border-left:4px solid #16a34a; }
+    .confidence-bar { height:8px; background:#e5e7eb; border-radius:4px; margin:.5rem 0; overflow:hidden; }
+    .confidence-fill { height:100%; background:linear-gradient(to right,#f59e0b,#16a34a); border-radius:4px; }
+  </style>
+</head>
+<body>
+  <header id="site-header"></header>
+  <div class="page-content" style="max-width:700px;">
+    <h1 style="font-size:1.75rem;font-weight:700;margin-bottom:.5rem;">Chẩn đoán bệnh cây</h1>
+    <p style="color:#6b7280;margin-bottom:1.5rem;">Chụp ảnh lá cây để AI phân tích và đưa ra giải pháp</p>
+
+    <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()"
+      ondragover="event.preventDefault();this.classList.add('drag')"
+      ondragleave="this.classList.remove('drag')"
+      ondrop="handleDrop(event)">
+      <svg width="48" height="48" fill="none" stroke="#9ca3af" stroke-width="1.5" viewBox="0 0 24 24" style="margin:0 auto 1rem;display:block;"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      <p style="font-weight:500;color:#374151;margin-bottom:.5rem;">Nhấn hoặc kéo ảnh vào đây</p>
+      <p style="font-size:.8rem;color:#9ca3af;">JPG, PNG, WEBP - tối đa 10MB</p>
+      <input type="file" id="file-input" accept="image/*" style="display:none" onchange="handleFile(this.files[0])">
+    </div>
+
+    <div id="preview-wrap" style="display:none;margin:1rem 0;text-align:center;">
+      <img id="preview-img" style="max-width:100%;max-height:300px;border-radius:.75rem;">
+      <button onclick="analyze()" class="btn btn-green" id="analyze-btn" style="margin-top:1rem;min-width:200px;">Phân tích bệnh cây</button>
+    </div>
+
+    <div id="result" style="display:none;margin-top:1.5rem;"></div>
+
+    <div class="alert alert-info" style="margin-top:1.5rem;">
+      💡 Mẹo: Chụp rõ lá bị bệnh, ánh sáng tốt, không bị mờ để AI chẩn đoán chính xác hơn
+    </div>
+  </div>
+  <div id="mobile-nav"></div>
+  <footer id="site-footer"></footer>
+  <script src="assets/common.js"></script>
+  <script>
+    let imageBase64 = null;
+
+    function handleFile(file) {
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        imageBase64 = e.target.result;
+        document.getElementById('preview-img').src = imageBase64;
+        document.getElementById('preview-wrap').style.display='block';
+        document.getElementById('result').style.display='none';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+      document.getElementById('upload-zone').classList.remove('drag');
+      handleFile(e.dataTransfer.files[0]);
+    }
+
+    async function analyze() {
+      const btn = document.getElementById('analyze-btn');
+      btn.textContent='Đang phân tích...'; btn.disabled=true;
+      await new Promise(r=>setTimeout(r,2000));
+
+      const results = [
+        { disease:'Vàng lá do thiếu dinh dưỡng', confidence:87, solution:'Bón phân NPK và tăng cường tưới nước. Loại bỏ lá vàng để tránh lây lan.', description:'Hiện tượng vàng lá thường do thiếu Nitơ hoặc tưới nước không đều' },
+        { disease:'Bệnh đốm lá', confidence:65, solution:'Phun thuốc trừ nấm, cắt bỏ lá bệnh, tránh tưới nước lên lá', description:'Do nấm gây ra, thường xảy ra khi độ ẩm cao' },
+        { disease:'Cây khỏe mạnh', confidence:95, solution:'Tiếp tục chăm sóc như hiện tại.', description:'Cây của bạn trông rất khỏe mạnh!' }
+      ];
+      const r = results[Math.floor(Math.random()*results.length)];
+
+      document.getElementById('result').innerHTML = `
+        <div class="result-card">
+          <h2 style="font-weight:700;margin-bottom:.5rem;">Kết quả phân tích</h2>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <h3 style="color:#16a34a;font-size:1.1rem;">${r.disease}</h3>
+            <span style="font-weight:700;color:#f59e0b;">${r.confidence}% độ tin cậy</span>
+          </div>
+          <div class="confidence-bar"><div class="confidence-fill" style="width:${r.confidence}%"></div></div>
+          <p style="font-size:.875rem;color:#6b7280;margin:.5rem 0;">${r.description}</p>
+          <div style="background:#f0fdf4;border-radius:.5rem;padding:1rem;margin-top:.75rem;">
+            <p style="font-size:.875rem;font-weight:600;color:#166534;margin-bottom:.25rem;">💊 Giải pháp:</p>
+            <p style="font-size:.875rem;color:#166534;">${r.solution}</p>
+          </div>
+          <div style="margin-top:.75rem;display:flex;gap:.5rem;">
+            <a href="ai-chat" class="btn btn-outline btn-sm">Hỏi thêm AI</a>
+            <a href="care-guide" class="btn btn-gray btn-sm">Hướng dẫn chăm sóc</a>
+          </div>
+        </div>`;
+      document.getElementById('result').style.display='block';
+      btn.textContent='Phân tích bệnh cây'; btn.disabled=false;
+    }
+  </script>
+</body>
+</html>

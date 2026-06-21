@@ -1,0 +1,167 @@
+@{
+    ViewData["Title"] = "Quản lý đơn hàng";
+}
+
+@section Styles {
+    <style>
+        .data-table{width:100%;border-collapse:collapse;background:#fff;border-radius:.75rem;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.07);} 
+        .data-table th{text-align:left;padding:.75rem 1rem;background:#f9fafb;font-size:.8rem;font-weight:600;color:#6b7280;border-bottom:1px solid #e5e7eb;} 
+        .data-table td{padding:.75rem 1rem;border-bottom:1px solid #f9fafb;font-size:.875rem;} 
+        .data-table tr:hover td{background:#fafafa;} 
+        .filter-bar{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem;}
+    </style>
+}
+
+<div style="margin-bottom:1.5rem;">
+  <h1 style="font-size:1.5rem;font-weight:800;">Quản lý đơn hàng</h1>
+  <p style="color:#6b7280;font-size:.875rem;" id="order-count-text">0 đơn hàng</p>
+</div>
+
+<div class="filter-bar">
+  <input type="text" id="search-order" placeholder="Tìm theo mã đơn, khách hàng, SĐT..." style="flex:1;min-width:200px;padding:.6rem 1rem;border:1px solid #e5e7eb;border-radius:.5rem;font-size:#875rem;outline:none;" oninput="searchOrders()">
+  <select id="status-filter" class="form-control" style="max-width:170px;" onchange="changeFilter()">
+    <option value="">Tất cả trạng thái</option>
+    <option value="pending">Chờ xác nhận</option>
+    <option value="confirmed">Đã xác nhận</option>
+    <option value="shipping">Đang giao</option>
+    <option value="delivered">Đã giao</option>
+    <option value="cancelled">Đã hủy</option>
+  </select>
+</div>
+
+<div style="overflow-x:auto;">
+  <table class="data-table">
+    <thead><tr>
+      <th>Mã đơn</th><th>Khách hàng</th><th>Điện thoại</th>
+      <th>Sản phẩm</th><th>Tổng tiền</th><th>Thanh toán</th><th>Trạng thái</th><th>Ngày đặt</th><th>Hành động</th>
+    </tr></thead>
+    <tbody id="orders-tbody">
+      <tr>
+        <td colspan="9" style="text-align:center;padding:2rem;color:#6b7280;">Đang tải danh sách đơn hàng...</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div style="display:flex;justify-content:space-between;align-items:center;margin-top:1.5rem;" id="pagination-controls">
+  <button onclick="prevPage()" class="btn btn-outline" id="btn-prev" style="font-size:.875rem;padding:.5rem 1rem;">&lsaquo; Trang trước</button>
+  <span id="page-info" style="font-size:.875rem;color:#4b5563;font-weight:500;">Trang 1 / 1</span>
+  <button onclick="nextPage()" class="btn btn-outline" id="btn-next" style="font-size:.875rem;padding:.5rem 1rem;">Trang sau &rsaquo;</button>
+</div>
+
+@section Scripts {
+    <script>
+        let allOrders = [];
+        let displayedOrders = [];
+        let currentPage = 1;
+        let totalPages = 1;
+        const pageSize = 15;
+
+        async function loadOrders() {
+          const tbody = document.getElementById('orders-tbody');
+          const status = document.getElementById('status-filter').value;
+          
+          try {
+            const data = await API.getOrders({ status, page: currentPage, pageSize });
+            allOrders = data.orders || [];
+            totalPages = data.totalPages || 1;
+            
+            filterAndRender();
+          } catch (e) {
+            tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:2rem;color:#ef4444;font-weight:600;">Lỗi tải dữ liệu: ${e.message}</td></tr>`;
+          }
+        }
+
+        function filterAndRender() {
+          const q = document.getElementById('search-order').value.toLowerCase().trim();
+          
+          if (!q) {
+            displayedOrders = [...allOrders];
+          } else {
+            displayedOrders = allOrders.filter(o => {
+              const name = (o.receiverName || '').toLowerCase();
+              const phone = (o.receiverPhone || '');
+              const code = (o.orderCode || '').toString();
+              const idStr = (o.orderId || '').toString();
+              return name.includes(q) || phone.includes(q) || code.includes(q) || idStr.includes(q);
+            });
+          }
+          
+          renderTable();
+        }
+
+        function searchOrders() {
+          filterAndRender();
+        }
+
+        function changeFilter() {
+          currentPage = 1;
+          loadOrders();
+        }
+
+        function prevPage() {
+          if (currentPage > 1) {
+            currentPage--;
+            loadOrders();
+          }
+        }
+
+        function nextPage() {
+          if (currentPage < totalPages) {
+            currentPage++;
+            loadOrders();
+          }
+        }
+
+        function renderTable() {
+          const tbody = document.getElementById('orders-tbody');
+          document.getElementById('order-count-text').textContent = displayedOrders.length + ' đơn hàng hiển thị';
+          
+          // Update pagination buttons
+          document.getElementById('page-info').textContent = `Trang ${currentPage} / ${totalPages}`;
+          document.getElementById('btn-prev').disabled = currentPage <= 1;
+          document.getElementById('btn-next').disabled = currentPage >= totalPages;
+
+          if (displayedOrders.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:2rem;color:#6b7280;">Không tìm thấy đơn hàng nào.</td></tr>';
+            return;
+          }
+
+          tbody.innerHTML = displayedOrders.map(o => {
+            const date = new Date(o.createdAt).toLocaleString('vi-VN');
+            const itemsText = o.items ? `${o.items.length} mặt hàng` : '1 mặt hàng';
+            
+            return `
+              <tr>
+                <td style="font-weight:700;color:#2563eb;">#${o.orderCode}</td>
+                <td>${o.receiverName || 'Guest'}</td>
+                <td>${o.receiverPhone || '--'}</td>
+                <td style="color:#6b7280;">${itemsText}</td>
+                <td style="font-weight:600;color:#16a34a;">${fmt(o.totalAmount)}</td>
+                <td>
+                  <span class="badge ${o.paymentStatus === 'Paid' ? 'badge-green' : 'badge-yellow'}" style="font-size:.75rem;">
+                    ${o.paymentStatus}
+                  </span>
+                </td>
+                <td>${statusLabel(o.status)}</td>
+                <td style="color:#9ca3af;font-size:.8rem;">${date}</td>
+                <td>
+                  <div style="display:flex;gap:.25rem;">
+                    <a href="order-detail?id=${o.orderId}" class="btn btn-outline" style="font-size:.75rem;padding:.3rem .6rem;">Chi tiết</a>
+                    <a href="update-order-status?id=${o.orderId}" class="btn btn-green" style="font-size:.75rem;padding:.3rem .6rem;">Cập nhật</a>
+                  </div>
+                </td>
+              </tr>`;
+          }).join('');
+        }
+
+        function statusLabel(s) {
+          const lower = s.toLowerCase();
+          const map = { pending: 'Chờ xác nhận', confirmed: 'Đã xác nhận', shipping: 'Đang giao', delivered: 'Đã giao', cancelled: 'Đã hủy' };
+          const cls = { pending: 'badge-yellow', confirmed: 'badge-blue', shipping: 'badge-orange', delivered: 'badge-green', cancelled: 'badge-red' };
+          return `<span class="badge ${cls[lower] || 'badge-gray'}">${map[lower] || s}</span>`;
+        }
+
+        loadOrders();
+    </script>
+}

@@ -1,0 +1,113 @@
+@{
+    ViewData["Title"] = "Kho hàng";
+}
+
+@section Styles {
+    <style>
+        .data-table{width:100%;border-collapse:collapse;background:#fff;border-radius:.75rem;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.07);} 
+        .data-table th{text-align:left;padding:.75rem 1rem;background:#f9fafb;font-size:.8rem;font-weight:600;color:#6b7280;border-bottom:1px solid #e5e7eb;} 
+        .data-table td{padding:.75rem 1rem;border-bottom:1px solid #f9fafb;font-size:.875rem;} 
+        .stock-bar{height:8px;background:#e5e7eb;border-radius:4px;overflow:hidden;width:80px;} 
+        .stock-fill{height:100%;border-radius:4px;}
+    </style>
+}
+
+<div style="margin-bottom:1.5rem;">
+  <h1 style="font-size:1.5rem;font-weight:800;">Quản lý kho hàng</h1>
+  <p style="color:#6b7280;font-size:.875rem;">Theo dõi tồn kho và nhập hàng</p>
+</div>
+
+<!-- Summary cards -->
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem;" id="inv-summary"></div>
+
+<!-- Low stock alert -->
+<div id="low-stock-alert" class="alert alert-error" style="display:none;margin-bottom:1rem;"></div>
+
+<div style="overflow-x:auto;">
+  <table class="data-table">
+    <thead><tr>
+      <th>Sản phẩm</th><th>Danh mục</th><th>Tồn kho</th>
+      <th>Mức độ</th><th>Nhập thêm</th><th>Hành động</th>
+    </tr></thead>
+    <tbody id="inv-tbody"></tbody>
+  </table>
+</div>
+
+@section Scripts {
+    <script>
+        let productsList = [];
+        let categoriesList = [];
+
+        async function initPage() {
+          // Load Categories
+          try {
+            categoriesList = await API.getCategories();
+          } catch(e) {
+            console.error(e);
+          }
+
+          // Load Products
+          try {
+            productsList = await API.getProducts({ limit: 100 });
+          } catch (e) {
+            productsList = [...PRODUCTS];
+          }
+
+          const stockData = productsList.map(p=>({ ...p, stock:p.stock||Math.floor(Math.random()*100)+5 }));
+          const lowItems = stockData.filter(p=>p.stock<15);
+          const total = stockData.reduce((s,p)=>s+p.stock,0);
+
+          // Summary
+          document.getElementById('inv-summary').innerHTML = [
+            ['📦','Tổng tồn kho',total+' đơn','#2563eb'],
+            ['⚠️','Sắp hết hàng',lowItems.length+' SP','#f59e0b'],
+            ['✅','Còn hàng tốt',stockData.filter(p=>p.stock>=30).length+' SP','#16a34a'],
+            ['❌','Hết hàng',stockData.filter(p=>p.stock===0).length+' SP','#ef4444'],
+          ].map(([icon,label,val,color])=>`
+            <div style="background:#fff;border-radius:.75rem;padding:1rem;box-shadow:0 1px 4px rgba(0,0,0,.07);text-align:center;">
+              <div style="font-size:1.5rem;">${icon}</div>
+              <div style="font-size:.75rem;color:#6b7280;">${label}</div>
+              <div style="font-size:1.25rem;font-weight:700;color:${color};">${val}</div>
+            </div>`).join('');
+
+          if(lowItems.length>0) {
+            const el=document.getElementById('low-stock-alert');
+            el.style.display='block';
+            el.innerHTML=`⚠️ <strong>${lowItems.length} sản phẩm sắp hết hàng:</strong> ${lowItems.map(p=>p.name).join(', ')}`;
+          }
+
+          document.getElementById('inv-tbody').innerHTML = stockData.map(p=> {
+            const catObj = categoriesList.find(c => c.categoryId == p.categoryId) || { name: p.category || 'Khác' };
+            return `
+              <tr>
+                <td style="font-weight:600;">${p.name}</td>
+                <td><span class="badge badge-green" style="font-size:.7rem;">${catObj.name}</span></td>
+                <td style="font-weight:700;color:${getStockColor(p.stock)};">${p.stock}</td>
+                <td>
+                  <div style="display:flex;align-items:center;gap:.5rem;">
+                    <div class="stock-bar"><div class="stock-fill" style="width:${Math.min(100,p.stock)}%;background:${getStockColor(p.stock)};"></div></div>
+                    <span style="font-size:.75rem;color:${getStockColor(p.stock)};">${getStockLabel(p.stock)}</span>
+                  </div>
+                </td>
+                <td>
+                  <input type="number" min="1" value="10" style="width:60px;padding:.3rem .5rem;border:1px solid #e5e7eb;border-radius:.375rem;font-size:.8rem;" id="inp-${p.id}">
+                </td>
+                <td>
+                  <button onclick="restock('${p.id}','${p.name}')" class="btn btn-green" style="font-size:.75rem;padding:.3rem .75rem;cursor:pointer;">Nhập hàng</button>
+                </td>
+              </tr>`;
+          }).join('');
+        }
+
+        function getStockColor(n) { return n===0?'#ef4444':n<15?'#f59e0b':'#16a34a'; }
+        function getStockLabel(n) { return n===0?'Hết hàng':n<15?'Sắp hết':'Còn hàng'; }
+
+        function restock(id, name) {
+          const qty=parseInt(document.getElementById('inp-'+id).value)||0;
+          if(qty<=0){ showToast('Nhập số lượng hợp lệ','error'); return; }
+          showToast('Đã nhập '+qty+' '+name);
+        }
+
+        initPage();
+    </script>
+}

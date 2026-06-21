@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>So sánh sản phẩm - VƯƠN</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    .compare-table { width:100%; border-collapse:collapse; background:#fff; border-radius:.75rem; overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,.08); }
+    .compare-table th, .compare-table td { padding:.875rem 1rem; text-align:center; border-bottom:1px solid #f3f4f6; }
+    .compare-table th { background:#f9fafb; font-weight:600; font-size:.875rem; }
+    .compare-table td:first-child { text-align:left; font-weight:500; font-size:.875rem; color:#6b7280; width:140px; }
+    .product-slot { min-width:180px; }
+    .slot-empty { border:2px dashed #e5e7eb; border-radius:.5rem; padding:1.5rem; text-align:center; cursor:pointer; }
+    .slot-empty:hover { border-color:#16a34a; background:#f0fdf4; }
+  </style>
+</head>
+<body>
+  <header id="site-header"></header>
+  <div class="page-content">
+    <h1 style="font-size:1.75rem;font-weight:700;margin-bottom:.5rem;">So sánh sản phẩm</h1>
+    <p style="color:#6b7280;margin-bottom:1.5rem;">So sánh tối đa 3 sản phẩm cùng lúc</p>
+
+    <!-- Product slots picker -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem;" id="slots">
+    </div>
+
+    <!-- Comparison table -->
+    <div id="compare-section" style="display:none;overflow-x:auto;">
+      <table class="compare-table" id="compare-table"></table>
+    </div>
+
+    <!-- Add from products -->
+    <div class="card card-pad" style="margin-top:1.5rem;">
+      <h2 style="font-weight:700;margin-bottom:.75rem;">Thêm sản phẩm để so sánh</h2>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;" id="add-product-chips"></div>
+    </div>
+  </div>
+  <div id="mobile-nav"></div>
+  <footer id="site-footer"></footer>
+  <script src="assets/common.js"></script>
+  <script>
+    let selected = [];
+
+    // Pre-select 2 products if coming from product detail
+    const preId = getParam('id');
+    if(preId) { const p=getProduct(preId); if(p) selected.push(p); }
+
+    function addProduct(id) {
+      if(selected.find(p=>p.id===id)) { showToast('Sản phẩm đã được thêm'); return; }
+      if(selected.length>=3) { showToast('Chỉ so sánh tối đa 3 sản phẩm', 'error'); return; }
+      const p=getProduct(id); if(!p) return;
+      selected.push(p); render();
+    }
+
+    function removeProduct(id) { selected=selected.filter(p=>p.id!==id); render(); }
+
+    function render() {
+      // Slots
+      const slotsEl=document.getElementById('slots');
+      slotsEl.innerHTML='';
+      for(let i=0;i<3;i++){
+        const p=selected[i];
+        const div=document.createElement('div');
+        if(p) {
+          div.innerHTML=`
+            <div style="background:#fff;border-radius:.75rem;box-shadow:0 1px 4px rgba(0,0,0,.07);padding:1rem;text-align:center;position:relative;">
+              <button onclick="removeProduct('${p.id}')" style="position:absolute;top:.5rem;right:.5rem;background:none;border:none;color:#ef4444;cursor:pointer;font-size:.875rem;">✕</button>
+              <img src="${p.image}" alt="${p.name}" style="width:80px;height:80px;object-fit:cover;border-radius:.5rem;margin-bottom:.5rem;" onerror="this.src='https://placehold.co/80x80/f0fdf4/16a34a?text=${encodeURIComponent(p.name[0])}'">
+              <p style="font-weight:600;font-size:.875rem;">${p.name}</p>
+              <p style="color:#16a34a;font-weight:700;font-size:1rem;">${fmt(p.price)}</p>
+            </div>`;
+        } else {
+          div.innerHTML=`<div class="slot-empty" onclick="focusAdd()"><div style="font-size:1.5rem;margin-bottom:.5rem;">+</div><p style="font-size:.8rem;color:#9ca3af;">Thêm sản phẩm</p></div>`;
+        }
+        slotsEl.appendChild(div);
+      }
+
+      // Comparison table
+      const section=document.getElementById('compare-section');
+      if(selected.length<2) { section.style.display='none'; }
+      else {
+        section.style.display='block';
+        const rows=[
+          ['Giá', p=>fmt(p.price)],
+          ['Đánh giá', p=>stars(p.rating)+` <span style="font-size:.75rem;color:#9ca3af;">(${p.reviewCount})</span>`],
+          ['Độ khó', p=>`<span class="badge ${p.difficulty==='Dễ'?'badge-green':p.difficulty==='Trung bình'?'badge-yellow':'badge-red'}">${p.difficulty}</span>`],
+          ['Danh mục', p=>p.category==='vegetable'?'Rau củ':p.category==='flower'?'Hoa cảnh':'Dụng cụ'],
+          ['Mức chăm sóc', p=>p.careLevel||'-'],
+          ['Còn hàng', p=>p.inStock?'<span style="color:#16a34a;">✓ Còn hàng</span>':'<span style="color:#ef4444;">✗ Hết hàng</span>'],
+          ['Thêm giỏ hàng', p=>`<button onclick="addToCartToast('${p.id}')" class="btn btn-green btn-sm">+ Thêm</button>`]
+        ];
+        const table=document.getElementById('compare-table');
+        table.innerHTML=`<thead><tr><th>Thuộc tính</th>${selected.map(p=>`<th class="product-slot">${p.name}</th>`).join('')}</tr></thead>
+          <tbody>${rows.map(([label,fn])=>`<tr><td>${label}</td>${selected.map(p=>`<td>${fn(p)}</td>`).join('')}</tr>`).join('')}</tbody>`;
+      }
+
+      // Chips
+      document.getElementById('add-product-chips').innerHTML=PRODUCTS.filter(p=>!selected.find(s=>s.id===p.id)).map(p=>`
+        <button onclick="addProduct('${p.id}')" class="btn btn-outline btn-sm" style="font-size:.8rem;">
+          ${p.name} · ${fmt(p.price)}
+        </button>`).join('');
+    }
+
+    function focusAdd() { document.getElementById('add-product-chips').scrollIntoView({behavior:'smooth'}); }
+
+    // Pre-select 2 defaults if none
+    if(selected.length===0) { selected=[PRODUCTS[0],PRODUCTS[1]]; }
+    render();
+  </script>
+</body>
+</html>

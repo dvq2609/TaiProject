@@ -1,0 +1,120 @@
+@{
+    ViewData["Title"] = "FAQ";
+}
+
+@section Styles {
+    <style>
+        .faq-card{background:#fff;border-radius:.75rem;padding:1.25rem;box-shadow:0 1px 4px rgba(0,0,0,.07);margin-bottom:.75rem;border-left:3px solid #16a34a;}
+    </style>
+}
+
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+  <div>
+    <h1 style="font-size:1.5rem;font-weight:800;">Quản lý FAQ</h1>
+    <p style="color:#6b7280;font-size:.875rem;">Câu hỏi thường gặp hiển thị trên trang hỗ trợ</p>
+  </div>
+  <button onclick="showAddForm()" class="btn btn-green">+ Thêm FAQ</button>
+</div>
+
+<!-- Add/Edit form -->
+<div class="card card-pad" id="faq-form" style="display:none;margin-bottom:1.5rem;">
+  <h2 style="font-weight:700;margin-bottom:1rem;" id="faq-form-title">Thêm FAQ mới</h2>
+  <div class="form-group">
+    <label>Câu hỏi *</label>
+    <input type="text" id="faq-q-input" class="form-control" placeholder="Nhập câu hỏi...">
+  </div>
+  <div class="form-group">
+    <label>Câu trả lời *</label>
+    <textarea id="faq-a-input" class="form-control" rows="4" placeholder="Nhập câu trả lời..."></textarea>
+  </div>
+  <div class="form-group">
+    <label>Danh mục</label>
+    <select id="faq-cat" class="form-control">
+      <option>Sản phẩm</option>
+      <option>Đơn hàng</option>
+      <option>Thanh toán</option>
+      <option>Trồng cây</option>
+      <option>Khác</option>
+    </select>
+  </div>
+  <div style="display:flex;gap:.5rem;">
+    <button onclick="saveFAQ()" class="btn btn-green">Lưu</button>
+    <button onclick="document.getElementById('faq-form').style.display='none'" class="btn btn-outline">Hủy</button>
+  </div>
+</div>
+
+<!-- FAQ list -->
+<div id="faq-list"></div>
+
+@section Scripts {
+    <script>
+        let faqs = [
+          { id:1, q:'Bộ kit gồm những gì?', a:'Mỗi bộ kit gồm: chậu trồng, viên nén xơ dừa, hạt giống đã chọn lọc, hướng dẫn trồng cây và quyền truy cập ứng dụng AI.', cat:'Sản phẩm', active:true },
+          { id:2, q:'Giao hàng trong bao lâu?', a:'Hà Nội và TP.HCM: 1-2 ngày. Các tỉnh thành khác: 3-5 ngày.', cat:'Đơn hàng', active:true },
+          { id:3, q:'Ứng dụng AI có tốn phí không?', a:'Ứng dụng AI miễn phí hoàn toàn khi mua bộ kit.', cat:'Sản phẩm', active:true },
+          { id:4, q:'Chính sách đổi trả như thế nào?', a:'Đổi/trả trong 7 ngày nếu sản phẩm bị lỗi từ nhà sản xuất.', cat:'Đơn hàng', active:false },
+        ];
+        let editId=null;
+
+        function renderList() {
+          document.getElementById('faq-list').innerHTML=faqs.map(f=>`
+            <div class="faq-card" style="${f.active?'':'opacity:.6;'}">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.75rem;">
+                <div style="flex:1;">
+                  <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem;">
+                    <span class="badge badge-green" style="font-size:.7rem;">${f.cat}</span>
+                    ${!f.active?'<span class="badge badge-red" style="font-size:.7rem;">Ẩn</span>':''}
+                  </div>
+                  <p style="font-weight:700;font-size:.95rem;margin-bottom:.5rem;">${f.q}</p>
+                  <p style="font-size:.875rem;color:#6b7280;line-height:1.5;">${f.a}</p>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:.25rem;flex-shrink:0;">
+                  <button onclick="editFAQ(${f.id})" class="btn btn-outline" style="font-size:.75rem;padding:.3rem .6rem;">Sửa</button>
+                  <button onclick="toggleFAQ(${f.id})" class="btn" style="font-size:.75rem;padding:.3rem .6rem;background:${f.active?'#fef3c7':'#f0fdf4'};color:${f.active?'#92400e':'#16a34a'};border:none;">${f.active?'Ẩn':'Hiện'}</button>
+                  <button onclick="deleteFAQ(${f.id})" class="btn" style="font-size:.75rem;padding:.3rem .6rem;background:#fee2e2;color:#ef4444;border:none;">Xóa</button>
+                </div>
+              </div>
+            </div>`).join('');
+        }
+
+        function showAddForm() {
+          editId=null;
+          document.getElementById('faq-form-title').textContent='Thêm FAQ mới';
+          document.getElementById('faq-q-input').value='';
+          document.getElementById('faq-a-input').value='';
+          document.getElementById('faq-form').style.display='block';
+        }
+
+        function editFAQ(id) {
+          const f=faqs.find(x=>x.id===id); if(!f) return;
+          editId=id;
+          document.getElementById('faq-form-title').textContent='Chỉnh sửa FAQ';
+          document.getElementById('faq-q-input').value=f.q;
+          document.getElementById('faq-a-input').value=f.a;
+          document.getElementById('faq-cat').value=f.cat;
+          document.getElementById('faq-form').style.display='block';
+          document.getElementById('faq-form').scrollIntoView({behavior:'smooth'});
+        }
+
+        function saveFAQ() {
+          const q=document.getElementById('faq-q-input').value.trim();
+          const a=document.getElementById('faq-a-input').value.trim();
+          const cat=document.getElementById('faq-cat').value;
+          if(!q||!a){ showToast('Vui lòng nhập đầy đủ','error'); return; }
+          if(editId) {
+            const f=faqs.find(x=>x.id===editId); if(f){f.q=q;f.a=a;f.cat=cat;}
+            showToast('Đã cập nhật FAQ');
+          } else {
+            faqs.push({ id:Date.now(), q, a, cat, active:true });
+            showToast('Đã thêm FAQ mới');
+          }
+          document.getElementById('faq-form').style.display='none';
+          renderList();
+        }
+
+        function toggleFAQ(id) { const f=faqs.find(x=>x.id===id); if(f){ f.active=!f.active; renderList(); } }
+        function deleteFAQ(id) { if(confirm('Xóa FAQ này?')){ faqs=faqs.filter(x=>x.id!==id); renderList(); showToast('Đã xóa FAQ'); } }
+
+        renderList();
+    </script>
+}

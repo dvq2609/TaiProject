@@ -1,0 +1,59 @@
+@{
+    ViewData["Title"] = "Thanh toán thành công";
+}
+
+@section Styles {
+    <style>
+        body { background: #f9fafb; }
+        .success-card {
+          max-width: 500px;
+          margin: 4rem auto;
+          text-align: center;
+        }
+    </style>
+}
+
+<div class="page-content">
+    <div class="card card-pad success-card">
+      <div style="width: 80px;height: 80px;background: #f0fdf4;border-radius: 50%;display: flex;align-items: center;justify-content: center;margin: 0 auto 1.5rem;">
+        <svg width="48" height="48" fill="none" stroke="#16a34a" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+      </div>
+      
+      <h1 style="font-size: 1.75rem;font-weight: 700;margin-bottom: .5rem;color: #16a34a;">Thanh toán thành công!</h1>
+      <p style="color: #4b5563;margin-bottom: 1.5rem;" id="success-msg">Cảm ơn bạn đã hoàn tất thanh toán.</p>
+      
+      <div style="background: #f3f4f6;padding: 1rem;border-radius: .5rem;margin-bottom: 2rem;text-align: left;font-size: .9rem;">
+        <div style="display: flex;justify-content: space-between;margin-bottom: .5rem;">
+          <span style="color: #6b7280;">Mã giao dịch (PayOS):</span>
+          <strong id="payos-code">-</strong>
+        </div>
+        <div style="display: flex;justify-content: space-between;">
+          <span style="color: #6b7280;">Trạng thái:</span>
+          <span class="badge badge-green">Đã thanh toán</span>
+        </div>
+      </div>
+      
+      <div style="display: flex;flex-direction: column;gap: .75rem;">
+        <a href="orders" class="btn btn-green">Đơn hàng của tôi</a>
+        <a href="home" class="btn btn-gray">Tiếp tục mua sắm</a>
+      </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Clean checkout info from localStorage
+        localStorage.removeItem('vuon_shipping');
+        localStorage.removeItem('vuon_payment');
+
+        const params = new URLSearchParams(window.location.search);
+        const orderCode = params.get('orderCode');
+        if (orderCode) {
+          document.getElementById('payos-code').textContent = "#" + orderCode;
+          document.getElementById('success-msg').textContent = `Đơn hàng #${orderCode} của bạn đã được thanh toán thành công và đang được xử lý.`;
+        }
+    </script>
+}

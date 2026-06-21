@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hồ sơ của tôi - VƯƠN</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    .profile-avatar { width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg,#16a34a,#4ade80); display:flex; align-items:center; justify-content:center; font-size:2rem; font-weight:700; color:#fff; margin:0 auto 1rem; }
+    .stat-box { text-align:center; padding:1rem; background:#fff; border-radius:.5rem; box-shadow:0 1px 3px rgba(0,0,0,.06); }
+    .menu-item { display:flex; align-items:center; gap:.75rem; padding:.875rem 1rem; background:#fff; border-radius:.5rem; margin-bottom:.5rem; cursor:pointer; text-decoration:none; color:#374151; transition:background .15s; }
+    .menu-item:hover { background:#f9fafb; }
+    .menu-icon { width:36px; height:36px; border-radius:.5rem; display:flex; align-items:center; justify-content:center; font-size:1.1rem; }
+    .menu-arrow { margin-left:auto; color:#9ca3af; }
+  </style>
+</head>
+<body>
+  <header id="site-header"></header>
+  <div class="page-content" style="max-width:500px;">
+    <!-- Profile card -->
+    <div class="card card-pad" style="text-align:center;margin-bottom:1.5rem;">
+      <div class="profile-avatar" id="avatar-text">?</div>
+      <h2 id="user-name" style="font-size:1.25rem;font-weight:700;margin-bottom:.25rem;">--</h2>
+      <p id="user-email" style="font-size:.875rem;color:#6b7280;margin-bottom:1rem;">--</p>
+      <a href="edit-profile" class="btn btn-outline btn-sm">Chỉnh sửa hồ sơ</a>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid-3" style="gap:.75rem;margin-bottom:1.5rem;">
+      <div class="stat-box">
+        <div style="font-size:1.5rem;font-weight:700;color:#16a34a;">3</div>
+        <div style="font-size:.75rem;color:#6b7280;">Đơn hàng</div>
+      </div>
+      <div class="stat-box">
+        <div style="font-size:1.5rem;font-weight:700;color:#f59e0b;" id="fav-count">0</div>
+        <div style="font-size:.75rem;color:#6b7280;">Yêu thích</div>
+      </div>
+      <div class="stat-box">
+        <div style="font-size:1.5rem;font-weight:700;color:#8b5cf6;">4</div>
+        <div style="font-size:.75rem;color:#6b7280;">Chậu cây</div>
+      </div>
+    </div>
+
+    <!-- Menu -->
+    <div style="margin-bottom:1.5rem;">
+      <p style="font-size:.8rem;font-weight:600;color:#9ca3af;text-transform:uppercase;margin-bottom:.5rem;">Tài khoản</p>
+      <a href="edit-profile" class="menu-item">
+        <div class="menu-icon" style="background:#eff6ff;">👤</div>
+        <span>Chỉnh sửa hồ sơ</span>
+        <span class="menu-arrow">›</span>
+      </a>
+      <a href="change-password" class="menu-item">
+        <div class="menu-icon" style="background:#fef3c7;">🔒</div>
+        <span>Đổi mật khẩu</span>
+        <span class="menu-arrow">›</span>
+      </a>
+      <a href="orders" class="menu-item">
+        <div class="menu-icon" style="background:#f0fdf4;">📦</div>
+        <span>Lịch sử đơn hàng</span>
+        <span class="menu-arrow">›</span>
+      </a>
+      <a href="favorites" class="menu-item">
+        <div class="menu-icon" style="background:#fdf2f8;">❤️</div>
+        <span>Sản phẩm yêu thích</span>
+        <span class="menu-arrow">›</span>
+      </a>
+    </div>
+
+    <div style="margin-bottom:1.5rem;">
+      <p style="font-size:.8rem;font-weight:600;color:#9ca3af;text-transform:uppercase;margin-bottom:.5rem;">Vườn của tôi</p>
+      <a href="plant-health" class="menu-item">
+        <div class="menu-icon" style="background:#f0fdf4;">🌱</div>
+        <span>Sức khỏe cây trồng</span>
+        <span class="menu-arrow">›</span>
+      </a>
+      <a href="watering-reminder" class="menu-item">
+        <div class="menu-icon" style="background:#eff6ff;">💧</div>
+        <span>Nhắc lịch tưới cây</span>
+        <span class="menu-arrow">›</span>
+      </a>
+      <a href="plant-journal" class="menu-item">
+        <div class="menu-icon" style="background:#fef9c3;">📓</div>
+        <span>Nhật ký trồng cây</span>
+        <span class="menu-arrow">›</span>
+      </a>
+    </div>
+
+    <div style="margin-bottom:1.5rem;">
+      <p style="font-size:.8rem;font-weight:600;color:#9ca3af;text-transform:uppercase;margin-bottom:.5rem;">Hỗ trợ</p>
+      <a href="support" class="menu-item">
+        <div class="menu-icon" style="background:#f0f9ff;">💬</div>
+        <span>Hỗ trợ khách hàng</span>
+        <span class="menu-arrow">›</span>
+      </a>
+    </div>
+
+    <button onclick="doLogout()" style="width:100%;padding:.875rem;background:#fef2f2;color:#ef4444;border:none;border-radius:.5rem;font-weight:500;cursor:pointer;font-size:.9rem;">
+      🚪 Đăng xuất
+    </button>
+  </div>
+  <div id="mobile-nav"></div>
+  <footer id="site-footer"></footer>
+  <script src="assets/common.js"></script>
+  <script>
+    requireAuth();
+    const u = Store.getUser();
+    if(u) {
+      document.getElementById('user-name').textContent = u.fullName || u.name || 'Người dùng';
+      document.getElementById('user-email').textContent = u.email || '';
+      const initials = (u.fullName||u.name||'U').charAt(0).toUpperCase();
+      document.getElementById('avatar-text').textContent = initials;
+    }
+    document.getElementById('fav-count').textContent = Store.getFavorites().length;
+  </script>
+</body>
+</html>

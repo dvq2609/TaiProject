@@ -1,0 +1,74 @@
+@{
+    ViewData["Title"] = "Chi tiết khách hàng";
+}
+
+@section Styles {
+    <style>
+        .detail-grid{display:grid;grid-template-columns:1fr 2fr;gap:1.5rem;} 
+        @@media(max-width:768px){.detail-grid{grid-template-columns:1fr;}} 
+        .data-table{width:100%;border-collapse:collapse;} 
+        .data-table th{text-align:left;padding:.6rem .75rem;background:#f9fafb;font-size:.75rem;font-weight:600;color:#6b7280;border-bottom:1px solid #e5e7eb;} 
+        .data-table td{padding:.6rem .75rem;border-bottom:1px solid #f9fafb;font-size:.8rem;}
+    </style>
+}
+
+<div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem;">
+  <a href="customers" style="color:#6b7280;text-decoration:none;font-size:1.25rem;">&lsaquo; Quay lại</a>
+  <h1 style="font-size:1.5rem;font-weight:800;">Chi tiết khách hàng</h1>
+</div>
+<div class="detail-grid" id="content">
+  <div style="text-align:center;color:#9ca3af;">Đang tải...</div>
+</div>
+
+@section Scripts {
+    <script>
+        const id=getParam('id');
+        const user=MOCK_USERS.find(u=>u.id==id)||MOCK_USERS[0];
+        const userOrders=MOCK_ORDERS.filter(o=>o.userId==user.id||o.email==user.email||(o.shippingInfo && o.shippingInfo.fullName === user.name));
+        const totalSpent=user.totalSpent || userOrders.reduce((s,o)=>s+o.total,0)||250000;
+        const initials=(user.name||user.fullName||'?').charAt(0).toUpperCase();
+        const joinDate = user.joinedDate || user.joinDate || '15/01/2025';
+
+        document.getElementById('content').innerHTML=`
+          <div>
+            <div class="card card-pad" style="text-align:center;margin-bottom:1rem;">
+              <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#16a34a,#4ade80);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.5rem;font-weight:700;margin:0 auto 1rem;">${initials}</div>
+              <h2 style="font-weight:700;margin-bottom:.25rem;">${user.name||user.fullName}</h2>
+              <p style="font-size:.875rem;color:#6b7280;">${user.email||'--'}</p>
+              <p style="font-size:.875rem;color:#6b7280;">${user.phone||user.phoneNumber||'--'}</p>
+              <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #f3f4f6;">
+                <span class="badge ${user.role==='admin'?'badge-red':'badge-green'}">${user.role==='admin'?'Admin':'Khách hàng'}</span>
+              </div>
+            </div>
+            <div class="card card-pad">
+              <h2 style="font-weight:700;margin-bottom:1rem;">Thống kê</h2>
+              ${[['Tổng đơn hàng',(user.totalOrders || userOrders.length || 0)+' đơn'],['Tổng chi tiêu',fmt(totalSpent)],['Ngày đăng ký',joinDate]].map(([l,v])=>`
+                <div style="display:flex;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid #f9fafb;font-size:.875rem;">
+                  <span style="color:#6b7280;">${l}</span>
+                  <span style="font-weight:600;">${v}</span>
+                </div>`).join('')}
+            </div>
+          </div>
+          <div>
+            <div class="card card-pad">
+              <h2 style="font-weight:700;margin-bottom:1rem;">Lịch sử đơn hàng</h2>
+              ${userOrders.length>0?`
+                <table class="data-table">
+                  <thead><tr><th>Mã đơn</th><th>Ngày</th><th>Tổng tiền</th><th>Trạng thái</th><th>Xem</th></tr></thead>
+                  <tbody>${userOrders.map(o=>`
+                    <tr>
+                      <td style="font-weight:600;color:#2563eb;">#${o.id}</td>
+                      <td>${o.createdAt || o.date || '--'}</td>
+                      <td style="color:#16a34a;font-weight:600;">${fmt(o.total)}</td>
+                      <td>${statusLabel(o.status)}</td>
+                      <td><a href="order-detail?id=${o.id}" style="font-size:.75rem;color:#2563eb;text-decoration:none;">Chi tiết</a></td>
+                    </tr>`).join('')}</tbody>
+                </table>`:`
+                <div style="text-align:center;padding:2rem;color:#9ca3af;">
+                  <div style="font-size:2rem;margin-bottom:.5rem;">📦</div>
+                  <p>Chưa có đơn hàng nào</p>
+                </div>`}
+            </div>
+          </div>`;
+    </script>
+}

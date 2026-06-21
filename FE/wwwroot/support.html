@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hỗ trợ khách hàng - VƯƠN</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    .support-card { background:#fff; border-radius:.75rem; box-shadow:0 1px 3px rgba(0,0,0,.07); padding:1.25rem; cursor:pointer; transition:box-shadow .2s; }
+    .support-card:hover { box-shadow:0 4px 12px rgba(0,0,0,.1); }
+    .faq-item { border-bottom:1px solid #f3f4f6; }
+    .faq-q { display:flex; justify-content:space-between; align-items:center; padding:.875rem 0; cursor:pointer; font-weight:500; font-size:.9rem; }
+    .faq-a { font-size:.875rem; color:#6b7280; padding-bottom:.875rem; line-height:1.6; display:none; }
+    .faq-a.open { display:block; }
+  </style>
+</head>
+<body>
+  <header id="site-header"></header>
+  <div class="page-content" style="max-width:700px;">
+    <h1 style="font-size:1.75rem;font-weight:700;margin-bottom:.5rem;">Hỗ trợ khách hàng</h1>
+    <p style="color:#6b7280;margin-bottom:1.5rem;">Chúng tôi luôn sẵn sàng giúp đỡ bạn</p>
+
+    <!-- Contact channels -->
+    <div class="grid-2" style="gap:1rem;margin-bottom:2rem;">
+      <div class="support-card" onclick="window.location='https://zalo.me/vuon'">
+        <div style="font-size:2rem;margin-bottom:.5rem;">💬</div>
+        <h3 style="font-weight:700;margin-bottom:.25rem;">Chat Zalo</h3>
+        <p style="font-size:.8rem;color:#6b7280;">Phản hồi trong 5 phút</p>
+        <p style="font-size:.8rem;color:#16a34a;font-weight:500;">8:00 - 22:00</p>
+      </div>
+      <div class="support-card" onclick="window.location='mailto:support@vuon.vn'">
+        <div style="font-size:2rem;margin-bottom:.5rem;">📧</div>
+        <h3 style="font-weight:700;margin-bottom:.25rem;">Email</h3>
+        <p style="font-size:.8rem;color:#6b7280;">support@vuon.vn</p>
+        <p style="font-size:.8rem;color:#16a34a;font-weight:500;">Phản hồi trong 24h</p>
+      </div>
+      <div class="support-card" onclick="window.location='tel:1900xxxx'">
+        <div style="font-size:2rem;margin-bottom:.5rem;">📞</div>
+        <h3 style="font-weight:700;margin-bottom:.25rem;">Hotline</h3>
+        <p style="font-size:.8rem;color:#6b7280;">1900 xxxx</p>
+        <p style="font-size:.8rem;color:#16a34a;font-weight:500;">8:00 - 20:00</p>
+      </div>
+      <div class="support-card" onclick="location.href='ai-chat'">
+        <div style="font-size:2rem;margin-bottom:.5rem;">🤖</div>
+        <h3 style="font-weight:700;margin-bottom:.25rem;">AI Tư vấn</h3>
+        <p style="font-size:.8rem;color:#6b7280;">Hỏi về cây trồng</p>
+        <p style="font-size:.8rem;color:#16a34a;font-weight:500;">24/7</p>
+      </div>
+    </div>
+
+    <!-- FAQ -->
+    <h2 style="font-weight:700;margin-bottom:1rem;">Câu hỏi thường gặp</h2>
+    <div class="card card-pad" style="margin-bottom:1.5rem;">
+      <div id="faq-list"></div>
+    </div>
+
+    <!-- Send ticket -->
+    <h2 style="font-weight:700;margin-bottom:1rem;">Gửi yêu cầu hỗ trợ</h2>
+    <div class="card card-pad">
+      <div class="form-group">
+        <label>Loại yêu cầu</label>
+        <select id="ticket-type" class="form-control">
+          <option>Vấn đề đơn hàng</option>
+          <option>Vấn đề sản phẩm</option>
+          <option>Vấn đề thanh toán</option>
+          <option>Tư vấn trồng cây</option>
+          <option>Khác</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Nội dung</label>
+        <textarea id="ticket-content" class="form-control" rows="4" placeholder="Mô tả vấn đề của bạn..."></textarea>
+      </div>
+      <button onclick="sendTicket()" class="btn btn-green btn-full">Gửi yêu cầu</button>
+    </div>
+  </div>
+  <div id="mobile-nav"></div>
+  <footer id="site-footer"></footer>
+  <script src="assets/common.js"></script>
+  <script>
+    const FAQS = [
+      { q:'Bộ kit gồm những gì?', a:'Mỗi bộ kit gồm: chậu trồng, viên nén xơ dừa (đất trồng), hạt giống đã chọn lọc, hướng dẫn trồng cây và quyền truy cập ứng dụng AI hỗ trợ chăm sóc.' },
+      { q:'Tôi cần kiến thức gì để sử dụng bộ kit?', a:'Không cần kiến thức gì cả! AI trong ứng dụng sẽ hướng dẫn bạn từng bước, từ gieo hạt đến thu hoạch.' },
+      { q:'Giao hàng trong bao lâu?', a:'Hà Nội và TP.HCM: 1-2 ngày. Các tỉnh thành khác: 3-5 ngày. Bạn có thể theo dõi đơn hàng trong ứng dụng.' },
+      { q:'Nếu cây không nảy mầm thì sao?', a:'Chúng tôi bảo đảm hạt giống đạt tỷ lệ nảy mầm >90%. Nếu cây không nảy mầm sau 14 ngày, chúng tôi sẽ đổi hạt miễn phí.' },
+      { q:'Làm thế nào để đổi/trả hàng?', a:'Bạn có thể đổi/trả hàng trong vòng 7 ngày nếu sản phẩm bị lỗi. Liên hệ hotline hoặc chat với chúng tôi để được hỗ trợ.' },
+      { q:'Ứng dụng AI có tốn phí không?', a:'Ứng dụng AI miễn phí hoàn toàn khi mua bộ kit. Không cần đăng ký gói nào thêm.' }
+    ];
+
+    document.getElementById('faq-list').innerHTML = FAQS.map((f,i)=>`
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(${i})">
+          <span>${f.q}</span>
+          <span id="arrow-${i}">›</span>
+        </div>
+        <div class="faq-a" id="faq-a-${i}">${f.a}</div>
+      </div>`).join('');
+
+    function toggleFaq(i) {
+      const a = document.getElementById('faq-a-'+i);
+      const arrow = document.getElementById('arrow-'+i);
+      const open = a.classList.toggle('open');
+      arrow.textContent = open ? '˅' : '›';
+    }
+
+    function sendTicket() {
+      const content = document.getElementById('ticket-content').value.trim();
+      if(!content) { showToast('Vui lòng nhập nội dung yêu cầu', 'error'); return; }
+      showToast('Đã gửi yêu cầu hỗ trợ! Chúng tôi sẽ phản hồi sớm nhất.');
+      document.getElementById('ticket-content').value='';
+    }
+  </script>
+</body>
+</html>

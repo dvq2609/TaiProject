@@ -1,0 +1,141 @@
+@{
+    ViewData["Title"] = "Cập nhật đơn hàng";
+}
+
+@section Styles {
+    <style>
+        .status-option{display:flex;align-items:center;gap:.75rem;padding:1rem;border:2px solid #e5e7eb;border-radius:.75rem;cursor:pointer;margin-bottom:.75rem;transition:all .2s;} 
+        .status-option:hover{border-color:#16a34a;background:#f0fdf4;} 
+        .status-option.selected{border-color:#16a34a;background:#f0fdf4;}
+    </style>
+}
+
+<div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem;">
+  <a href="orders" style="color:#6b7280;text-decoration:none;font-size:1.25rem;">&lsaquo; Quay lại</a>
+  <h1 style="font-size:1.5rem;font-weight:800;">Cập nhật trạng thái</h1>
+</div>
+
+<div class="card card-pad" style="margin-bottom:1rem;">
+  <div style="display:flex;justify-content:space-between;align-items:center;">
+    <div>
+      <p style="font-size:.875rem;color:#6b7280;">Đơn hàng</p>
+      <p style="font-size:1.25rem;font-weight:700;" id="order-title">#--</p>
+    </div>
+    <div id="current-status"></div>
+  </div>
+</div>
+
+<div class="card card-pad" style="margin-bottom:1rem;">
+  <h2 style="font-weight:700;margin-bottom:1rem;">Chọn trạng thái mới</h2>
+  <div id="status-options">Đang tải cấu hình...</div>
+</div>
+
+<button onclick="updateStatus()" class="btn btn-green btn-full" id="btn-submit" style="display:none;">Cập nhật</button>
+
+@section Scripts {
+    <script>
+        const id = getParam('id');
+        let currentOrder = null;
+        let selectedStatus = '';
+        let allowedTransitions = [];
+
+        async function loadOrder() {
+          const optionsEl = document.getElementById('status-options');
+          try {
+            const order = await API.getOrder(id);
+            currentOrder = order;
+            selectedStatus = order.status;
+
+            document.getElementById('order-title').textContent = '#' + order.orderCode + ' - ' + (order.receiverName || 'Guest');
+            document.getElementById('current-status').innerHTML = 'Hiện tại: ' + statusLabel(order.status);
+
+            const status = order.status.toLowerCase();
+            
+            if (status === 'pending') {
+              allowedTransitions = [
+                { value: 'Confirmed', label: '✅ Đã xác nhận', desc: 'Đã xác nhận và bắt đầu chuẩn bị hàng' },
+                { value: 'Cancelled', label: '❌ Hủy đơn hàng', desc: 'Hủy bỏ đơn hàng này' }
+              ];
+            } else if (status === 'confirmed') {
+              allowedTransitions = [
+                { value: 'Shipping', label: '🚚 Đang giao hàng', desc: 'Bàn giao gói hàng cho đối tác vận chuyển' },
+                { value: 'Cancelled', label: '❌ Hủy đơn hàng', desc: 'Hủy bỏ đơn hàng này (Admin hủy)' }
+              ];
+            } else if (status === 'shipping') {
+              allowedTransitions = [
+                { value: 'Delivered', label: '🎉 Đã giao thành công', desc: 'Đơn hàng đã được giao nhận thành công' }
+              ];
+            } else {
+              allowedTransitions = [];
+            }
+
+            if (allowedTransitions.length === 0) {
+              optionsEl.innerHTML = `
+                <div style="padding:1.5rem;background:#f3f4f6;color:#4b5563;border-radius:.5rem;text-align:center;font-weight:600;">
+                  🔒 Đơn hàng ở trạng thái <strong>${statusLabel(order.status)}</strong> và không thể thay đổi thêm.
+                </div>`;
+              document.getElementById('btn-submit').style.display = 'none';
+            } else {
+              selectedStatus = allowedTransitions[0].value;
+              
+              optionsEl.innerHTML = allowedTransitions.map(s => `
+                <div class="status-option ${s.value === selectedStatus ? 'selected' : ''}" id="opt-${s.value.toLowerCase()}" onclick="selectStatus('${s.value}')">
+                  <div style="flex:1;">
+                    <p style="font-weight:600;">${s.label}</p>
+                    <p style="font-size:.8rem;color:#6b7280;">${s.desc}</p>
+                  </div>
+                  <div id="radio-${s.value.toLowerCase()}" style="width:18px;height:18px;border-radius:50%;border:2px solid ${s.value === selectedStatus ? '#16a34a' : '#d1d5db'};background:${s.value === selectedStatus ? '#16a34a' : '#fff'};"></div>
+                </div>`).join('');
+              
+              document.getElementById('btn-submit').style.display = 'block';
+            }
+          } catch (e) {
+            optionsEl.innerHTML = `<div class="alert alert-error">Lỗi tải thông tin: ${e.message}</div>`;
+          }
+        }
+
+        function selectStatus(val) {
+          selectedStatus = val;
+          allowedTransitions.forEach(s => {
+            const opt = document.getElementById('opt-' + s.value.toLowerCase());
+            const radio = document.getElementById('radio-' + s.value.toLowerCase());
+            if (s.value === val) {
+              opt.classList.add('selected');
+              radio.style.borderColor = '#16a34a';
+              radio.style.background = '#16a34a';
+            } else {
+              opt.classList.remove('selected');
+              radio.style.borderColor = '#d1d5db';
+              radio.style.background = '#fff';
+            }
+          });
+        }
+
+        async function updateStatus() {
+          const btn = document.getElementById('btn-submit');
+          const origText = btn.textContent;
+          try {
+            btn.disabled = true;
+            btn.textContent = 'Đang cập nhật...';
+            
+            await API.updateOrderStatus(id, selectedStatus);
+            showToast('Đã cập nhật trạng thái đơn hàng thành công!', 'success');
+            
+            setTimeout(() => location.href = 'orders', 1200);
+          } catch (e) {
+            showToast(e.message || 'Cập nhật trạng thái thất bại', 'error');
+            btn.disabled = false;
+            btn.textContent = origText;
+          }
+        }
+
+        function statusLabel(s) {
+          const lower = s.toLowerCase();
+          const map = { pending: 'Chờ xác nhận', confirmed: 'Đã xác nhận', shipping: 'Đang giao', delivered: 'Đã giao', cancelled: 'Đã hủy' };
+          const cls = { pending: 'badge-yellow', confirmed: 'badge-blue', shipping: 'badge-orange', delivered: 'badge-green', cancelled: 'badge-red' };
+          return `<span class="badge ${cls[lower] || 'badge-gray'}">${map[lower] || s}</span>`;
+        }
+
+        loadOrder();
+    </script>
+}

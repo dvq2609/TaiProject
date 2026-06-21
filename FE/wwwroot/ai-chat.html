@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Tư vấn - VƯƠN</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    .chat-wrap { max-width:800px; margin:0 auto; }
+    .loading-dots { display:flex; gap:.3rem; }
+    .loading-dots span { width:8px;height:8px;border-radius:50%;background:#9ca3af;animation:blink 1s infinite; }
+    .loading-dots span:nth-child(2){animation-delay:.2s;}
+    .loading-dots span:nth-child(3){animation-delay:.4s;}
+    @keyframes blink{0%,100%{opacity:.3;}50%{opacity:1;}}
+  </style>
+</head>
+<body>
+  <header id="site-header"></header>
+  <div class="page-content">
+    <div class="chat-wrap">
+      <div class="chat-header">
+        <div class="chat-bot-icon">
+          <svg width="24" height="24" fill="none" stroke="#2563eb" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M12 2v3M8 2h8M9 11V7h6v4"/><circle cx="9" cy="15" r="1"/><circle cx="15" cy="15" r="1"/></svg>
+        </div>
+        <div>
+          <h1 style="font-size:1.1rem;font-weight:700;">AI Tư vấn trồng cây</h1>
+          <p style="font-size:.8rem;opacity:.8;">Luôn sẵn sàng giúp đỡ bạn</p>
+        </div>
+      </div>
+
+      <div class="chat-messages" id="chat-messages">
+        <div class="chat-bubble-wrap">
+          <div class="chat-avatar bot">
+            <svg width="18" height="18" fill="none" stroke="#2563eb" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M12 2v3M8 2h8M9 11V7h6v4"/><circle cx="9" cy="15" r="1"/><circle cx="15" cy="15" r="1"/></svg>
+          </div>
+          <div class="chat-bubble bot">Xin chào! Tôi là AI tư vấn trồng cây của VƯƠN. Tôi có thể giúp gì cho bạn?</div>
+        </div>
+      </div>
+
+      <div class="quick-questions">
+        <span style="font-size:.8rem;color:#6b7280;margin-right:.25rem;">Gợi ý:</span>
+        ${AI_QUESTIONS ? '' : ''}
+      </div>
+
+      <div class="chat-input-row">
+        <input type="text" class="chat-input" id="chat-input" placeholder="Nhập câu hỏi về cây trồng...">
+        <button onclick="sendMessage()" class="btn btn-green" style="padding:.6rem 1rem;" id="send-btn">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div id="mobile-nav"></div>
+  <footer id="site-footer"></footer>
+
+  <script src="assets/common.js"></script>
+  <script>
+    const msgs = document.getElementById('chat-messages');
+    const input = document.getElementById('chat-input');
+    let history = [];
+
+    // Render quick questions
+    const qqEl = document.querySelector('.quick-questions');
+    qqEl.innerHTML = '<span style="font-size:.8rem;color:#6b7280;margin-right:.25rem;">Gợi ý:</span>' +
+      AI_QUESTIONS.map(q=>`<button class="quick-q-btn" onclick="setInput('${q}')">${q}</button>`).join('');
+
+    function setInput(q) { input.value = q; input.focus(); }
+
+    function addBubble(text, isBot) {
+      const wrap = document.createElement('div');
+      wrap.className = 'chat-bubble-wrap' + (isBot?'':' user');
+      wrap.innerHTML = `
+        <div class="chat-avatar ${isBot?'bot':'user'}">
+          <svg width="18" height="18" fill="none" stroke="${isBot?'#2563eb':'#16a34a'}" stroke-width="2" viewBox="0 0 24 24">
+            ${isBot?'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M12 2v3M8 2h8M9 11V7h6v4"/><circle cx="9" cy="15" r="1"/><circle cx="15" cy="15" r="1"/>':'<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>'}
+          </svg>
+        </div>
+        <div class="chat-bubble ${isBot?'bot':'user'}">${text.replace(/\n/g,'<br>')}</div>`;
+      msgs.appendChild(wrap);
+      msgs.scrollTop = msgs.scrollHeight;
+    }
+
+    function showLoading() {
+      const wrap = document.createElement('div');
+      wrap.className = 'chat-bubble-wrap';
+      wrap.id = 'loading-bubble';
+      wrap.innerHTML = `
+        <div class="chat-avatar bot">
+          <svg width="18" height="18" fill="none" stroke="#2563eb" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M12 2v3M8 2h8M9 11V7h6v4"/><circle cx="9" cy="15" r="1"/><circle cx="15" cy="15" r="1"/></svg>
+        </div>
+        <div class="chat-bubble bot"><div class="loading-dots"><span></span><span></span><span></span></div></div>`;
+      msgs.appendChild(wrap);
+      msgs.scrollTop = msgs.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const text = input.value.trim();
+      if(!text) return;
+      input.value='';
+      document.getElementById('send-btn').disabled=true;
+
+      addBubble(text, false);
+      history.push({text,isBot:false});
+      showLoading();
+
+      const reply = await askGemini(text, history);
+      document.getElementById('loading-bubble')?.remove();
+      addBubble(reply, true);
+      history.push({text:reply,isBot:true});
+      document.getElementById('send-btn').disabled=false;
+    }
+
+    input.addEventListener('keydown', e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendMessage(); } });
+
+    // Auto submit query from URL query params
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialQuery = urlParams.get('q');
+    if (initialQuery) {
+      input.value = initialQuery;
+      sendMessage();
+    }
+  </script>
+</body>
+</html>

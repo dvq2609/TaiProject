@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tìm kiếm - VƯƠN</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    .search-bar-big { display:flex; gap:.5rem; margin-bottom:1.5rem; }
+    .search-bar-big input { flex:1; padding:.875rem 1.25rem; border:2px solid #e5e7eb; border-radius:.75rem; font-size:1rem; outline:none; transition:border .2s; }
+    .search-bar-big input:focus { border-color:#16a34a; }
+    .search-bar-big button { padding:.875rem 1.5rem; border-radius:.75rem; }
+    .suggest-chip { padding:.4rem .9rem; border:1px solid #e5e7eb; border-radius:2rem; background:#fff; cursor:pointer; font-size:.8rem; transition:all .15s; }
+    .suggest-chip:hover { border-color:#16a34a; color:#16a34a; }
+    .history-item { display:flex; justify-content:space-between; align-items:center; padding:.6rem 0; border-bottom:1px solid #f9fafb; font-size:.875rem; cursor:pointer; color:#374151; }
+  </style>
+</head>
+<body>
+  <header id="site-header"></header>
+  <div class="page-content">
+    <h1 style="font-size:1.75rem;font-weight:700;margin-bottom:1rem;">Tìm kiếm</h1>
+
+    <div class="search-bar-big">
+      <input type="text" id="search-input" placeholder="Tìm cây trồng, rau củ, hoa..." autofocus
+        oninput="onSearchInput()" onkeydown="if(event.key==='Enter')doSearch()">
+      <button onclick="doSearch()" class="btn btn-green">Tìm</button>
+    </div>
+
+    <div id="initial-state">
+      <div style="margin-bottom:1.5rem;">
+        <p style="font-size:.8rem;font-weight:600;color:#9ca3af;text-transform:uppercase;margin-bottom:.75rem;">Tìm kiếm phổ biến</p>
+        <div style="display:flex;flex-wrap:wrap;gap:.5rem;">
+          <button class="suggest-chip" onclick="setSearch('rau cải')">rau cải</button>
+          <button class="suggest-chip" onclick="setSearch('cà chua')">cà chua</button>
+          <button class="suggest-chip" onclick="setSearch('hoa hồng')">hoa hồng</button>
+          <button class="suggest-chip" onclick="setSearch('kit trồng rau')">kit trồng rau</button>
+          <button class="suggest-chip" onclick="setSearch('đất trồng')">đất trồng</button>
+          <button class="suggest-chip" onclick="setSearch('phân bón')">phân bón</button>
+          <button class="suggest-chip" onclick="setSearch('chậu mini')">chậu mini</button>
+        </div>
+      </div>
+      <div id="history-section" style="display:none;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:.5rem;">
+          <p style="font-size:.8rem;font-weight:600;color:#9ca3af;text-transform:uppercase;">Lịch sử tìm kiếm</p>
+          <button onclick="clearHistory()" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:.8rem;">Xóa tất cả</button>
+        </div>
+        <div id="history-list"></div>
+      </div>
+    </div>
+
+    <div id="results-state" style="display:none;">
+      <p id="result-info" style="color:#6b7280;font-size:.875rem;margin-bottom:1rem;"></p>
+      <div id="results-grid" class="product-grid"></div>
+      <div id="blog-results" style="margin-top:1.5rem;"></div>
+    </div>
+
+    <div id="empty-results" style="display:none;text-align:center;padding:3rem;">
+      <div style="font-size:3rem;margin-bottom:1rem;">🔍</div>
+      <h2 style="font-weight:700;margin-bottom:.5rem;">Không tìm thấy kết quả</h2>
+      <p style="color:#6b7280;">Thử từ khóa khác hoặc xem tất cả sản phẩm</p>
+      <a href="products" class="btn btn-green" style="margin-top:1rem;">Xem tất cả sản phẩm</a>
+    </div>
+  </div>
+  <div id="mobile-nav"></div>
+  <footer id="site-footer"></footer>
+  <script src="assets/common.js"></script>
+  <script>
+    let searchHistory = JSON.parse(localStorage.getItem('vuon_search_history')||'[]');
+    renderHistory();
+
+    function setSearch(q) {
+      document.getElementById('search-input').value = q;
+      doSearch();
+    }
+
+    function doSearch() {
+      const q = document.getElementById('search-input').value.trim().toLowerCase();
+      if(!q) return;
+      addHistory(q);
+
+      const productResults = PRODUCTS.filter(p=>
+        p.name.toLowerCase().includes(q)||
+        (p.description||'').toLowerCase().includes(q)||
+        (p.category||'').toLowerCase().includes(q)
+      );
+      const blogResults = BLOG_POSTS.filter(p=>
+        p.title.toLowerCase().includes(q)||
+        p.summary.toLowerCase().includes(q)
+      );
+
+      document.getElementById('initial-state').style.display='none';
+      document.getElementById('results-state').style.display='none';
+      document.getElementById('empty-results').style.display='none';
+
+      if(productResults.length===0 && blogResults.length===0) {
+        document.getElementById('empty-results').style.display='block';
+        return;
+      }
+
+      document.getElementById('results-state').style.display='block';
+      document.getElementById('result-info').textContent = `Tìm thấy ${productResults.length} sản phẩm, ${blogResults.length} bài viết cho "${q}"`;
+
+      document.getElementById('results-grid').innerHTML = productResults.map(p=>productCardHTML(p,'.')).join('');
+
+      if(blogResults.length>0) {
+        document.getElementById('blog-results').innerHTML = `
+          <h2 style="font-weight:700;margin-bottom:1rem;">Bài viết liên quan</h2>
+          ${blogResults.map(p=>`
+            <a href="blog-detail?id=${p.id}" style="text-decoration:none;color:inherit;display:block;">
+              <div style="background:#fff;border-radius:.5rem;padding:1rem;box-shadow:0 1px 3px rgba(0,0,0,.06);margin-bottom:.75rem;display:flex;gap:.75rem;">
+                <span style="font-size:1.5rem;">${p.emoji||'📖'}</span>
+                <div>
+                  <p style="font-weight:600;font-size:.875rem;">${p.title}</p>
+                  <p style="font-size:.8rem;color:#6b7280;margin-top:.25rem;">${p.summary}</p>
+                </div>
+              </div>
+            </a>`).join('')}`;
+      } else {
+        document.getElementById('blog-results').innerHTML='';
+      }
+    }
+
+    function onSearchInput() {
+      const q = document.getElementById('search-input').value.trim();
+      if(!q) {
+        document.getElementById('initial-state').style.display='block';
+        document.getElementById('results-state').style.display='none';
+        document.getElementById('empty-results').style.display='none';
+      }
+    }
+
+    function addHistory(q) {
+      searchHistory = [q, ...searchHistory.filter(h=>h!==q)].slice(0,8);
+      localStorage.setItem('vuon_search_history', JSON.stringify(searchHistory));
+      renderHistory();
+    }
+
+    function clearHistory() {
+      searchHistory=[];
+      localStorage.removeItem('vuon_search_history');
+      document.getElementById('history-section').style.display='none';
+    }
+
+    function renderHistory() {
+      if(searchHistory.length===0) { document.getElementById('history-section').style.display='none'; return; }
+      document.getElementById('history-section').style.display='block';
+      document.getElementById('history-list').innerHTML = searchHistory.map(h=>`
+        <div class="history-item" onclick="setSearch('${h}')">
+          <span>🕐 ${h}</span>
+          <span style="color:#9ca3af;font-size:.75rem;">›</span>
+        </div>`).join('');
+    }
+
+    // Auto-search if query param
+    const q = getParam('q');
+    if(q) { document.getElementById('search-input').value=q; doSearch(); }
+  </script>
+</body>
+</html>

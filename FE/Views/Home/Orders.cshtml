@@ -1,0 +1,110 @@
+@{
+    ViewData["Title"] = "Lịch sử đơn hàng";
+}
+
+<div class="page-content">
+    <h1 style="font-size:1.75rem;font-weight:700;margin-bottom:1.5rem;">Lịch sử đơn hàng</h1>
+    <div id="orders-list"></div>
+</div>
+
+@section Scripts {
+    <script>
+        if (!requireAuth()) {
+          throw new Error("Auth required");
+        }
+
+        async function loadOrders() {
+          const listEl = document.getElementById('orders-list');
+          listEl.innerHTML = '<div style="text-align:center;padding:2rem;color:#6b7280;">Đang tải danh sách đơn hàng...</div>';
+          
+          try {
+            const orders = await API.getMyOrders();
+            
+            if (orders.length === 0) {
+              listEl.innerHTML = `
+                <div style="text-align:center;padding:4rem 0;">
+                  <svg width="64" height="64" fill="none" stroke="#9ca3af" stroke-width="2" viewBox="0 0 24 24" style="margin:0 auto 1rem;display:block;"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 001.94 1.61h9.72a2 2 0 001.94-1.61L23 6H6"/></svg>
+                  <h2 style="font-size:1.25rem;font-weight:700;margin-bottom:.5rem;">Chưa có đơn hàng nào</h2>
+                  <p style="color:#6b7280;margin-bottom:1.5rem;">Hãy bắt đầu đặt mua cây trồng của riêng bạn</p>
+                  <a href="home" class="btn btn-green">Mua sắm ngay</a>
+                </div>`;
+              return;
+            }
+
+            listEl.innerHTML = orders.map(order => {
+              const formattedDate = new Date(order.createdAt).toLocaleString('vi-VN');
+              const isPending = order.status.toLowerCase() === 'pending';
+              const isPayOS = order.paymentMethod.toLowerCase() === 'payos';
+              
+              return `
+                <div class="card card-pad" style="margin-bottom:1rem;">
+                  <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.5rem;">
+                    <div>
+                      <span style="font-weight:700;font-size:1rem;color:#111827;">Mã đơn: #${order.orderCode}</span>
+                      <span style="font-size:.8rem;color:#9ca3af;margin-left:.5rem;">${formattedDate}</span>
+                    </div>
+                    ${statusLabel(order.status)}
+                  </div>
+                  
+                  <div style="margin:.75rem 0;border-top:1px solid #f3f4f6;border-bottom:1px solid #f3f4f6;padding:.5rem 0;">
+                    ${order.items.map(item => `
+                      <div style="display:flex;align-items:center;gap:.75rem;padding:.4rem 0;font-size:.875rem;">
+                        ${item.productImage ? `<img src="${item.productImage}" style="width:48px;height:48px;border-radius:.375rem;object-fit:cover;">` : ''}
+                        <div style="flex:1;">
+                          <span style="font-weight:500;color:#374151;">${item.productName}</span>
+                          <span style="color:#6b7280;margin-left:.5rem;">× ${item.quantity}</span>
+                        </div>
+                        <span style="font-weight:600;color:#374151;">${fmt(item.subtotal)}</span>
+                      </div>
+                    `).join('')}
+                  </div>
+                  
+                  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;">
+                    <div style="font-size:.875rem;color:#6b7280;">
+                      <span>Phương thức: <strong>${order.paymentMethod === 'cod' ? 'COD' : 'QR PayOS'}</strong></span>
+                      <span style="margin:0 .5rem;">|</span>
+                      <span>Thanh toán: <strong style="color:${order.paymentStatus === 'Paid' ? '#10b981' : '#f59e0b'}">${order.paymentStatus}</strong></span>
+                    </div>
+                    <span style="font-weight:700;color:#16a34a;font-size:1.1rem;">Tổng cộng: ${fmt(order.totalAmount)}</span>
+                  </div>
+                  
+                  <div style="margin-top:1rem;display:flex;gap:.5rem;flex-wrap:wrap;border-top:1px solid #f3f4f6;padding-top:1rem;">
+                    ${isPending && isPayOS && order.paymentStatus !== 'Paid' ? `
+                      <a href="https://pay.payos.vn/web/${order.paymentLinkId}" target="_blank" class="btn btn-green btn-sm">Thanh toán lại</a>
+                    ` : ''}
+                    ${isPending ? `
+                      <button onclick="cancelOrder(${order.orderId}, '${order.orderCode}')" class="btn btn-outline btn-sm" style="color:#ef4444;border-color:#fecaca;padding:.25rem .75rem;font-size:.875rem;">Hủy đơn hàng</button>
+                    ` : ''}
+                    <a href="track-order?orderId=${order.orderId}" class="btn btn-gray btn-sm">Theo dõi</a>
+                  </div>
+                </div>`;
+            }).join('');
+          } catch (e) {
+            listEl.innerHTML = `<div class="alert alert-error">Lỗi khi tải danh sách đơn hàng: ${e.message}</div>`;
+          }
+        }
+
+        async function cancelOrder(orderId, orderCode) {
+          if (!confirm(`Bạn có chắc chắn muốn hủy đơn hàng #${orderCode}?`)) {
+            return;
+          }
+          
+          try {
+            await API.cancelOrder(orderId);
+            showToast('Hủy đơn hàng thành công!', 'success');
+            loadOrders();
+          } catch (e) {
+            showToast(e.message || 'Lỗi khi hủy đơn hàng', 'error');
+          }
+        }
+
+        function statusLabel(s) {
+          const lower = s.toLowerCase();
+          const map = { pending:'Chờ xác nhận', confirmed:'Đã xác nhận', shipping:'Đang giao', delivered:'Đã giao', cancelled:'Đã hủy' };
+          const cls = { pending:'badge-yellow', confirmed:'badge-blue', shipping:'badge-orange', delivered:'badge-green', cancelled:'badge-red' };
+          return `<span class="badge ${cls[lower]||'badge-gray'}">${map[lower]||s}</span>`;
+        }
+
+        loadOrders();
+    </script>
+}

@@ -1,0 +1,253 @@
+@{
+    ViewData["Title"] = "Sản phẩm";
+}
+
+@section Styles {
+    <style>
+        .form-grid{display:grid;grid-template-columns:2fr 1fr;gap:1.5rem;}
+        @@media(max-width:768px){.form-grid{grid-template-columns:1fr;}}
+        .form-section{margin-bottom:1.25rem;}
+        .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;}
+        @@media(max-width:480px){.grid-2{grid-template-columns:1fr;}}
+        .save-btn{width:100%;padding:.75rem;font-size:1rem;font-weight:700;background:#16a34a;color:#fff;border:none;border-radius:.5rem;cursor:pointer;transition:opacity .2s;}
+        .save-btn:hover{opacity:.88;}
+        .save-btn:disabled{opacity:.55;cursor:not-allowed;}
+        .char-count{font-size:.75rem;color:#9ca3af;text-align:right;margin-top:.2rem;}
+    </style>
+}
+
+<div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem;">
+  <a href="products" style="color:#6b7280;text-decoration:none;font-size:1.25rem;">&lsaquo; Quay lại</a>
+  <h1 id="form-title" style="font-size:1.5rem;font-weight:800;">Thêm sản phẩm</h1>
+</div>
+
+<div class="form-grid">
+  <!-- ===== Cột trái ===== -->
+  <div>
+    <!-- Thông tin cơ bản -->
+    <div class="card card-pad form-section">
+      <h2 style="font-weight:700;margin-bottom:1rem;">Thông tin cơ bản</h2>
+      <div class="form-group">
+        <label for="f-name">Tên sản phẩm <span style="color:#ef4444;">*</span></label>
+        <input type="text" id="f-name" class="form-control" placeholder="VD: Bộ kit trồng cà chua bi" maxlength="200">
+      </div>
+      <div class="form-group">
+        <label for="f-short-desc">Mô tả ngắn</label>
+        <textarea id="f-short-desc" class="form-control" rows="2" placeholder="Tóm tắt về sản phẩm..." maxlength="500" oninput="updateCharCount('f-short-desc','cc-short',500)"></textarea>
+        <div class="char-count" id="cc-short">0 / 500</div>
+      </div>
+      <div class="form-group">
+        <label for="f-desc">Mô tả chi tiết</label>
+        <textarea id="f-desc" class="form-control" rows="5" placeholder="Nội dung đầy đủ, công dụng, cách trồng..." maxlength="2000" oninput="updateCharCount('f-desc','cc-desc',2000)"></textarea>
+        <div class="char-count" id="cc-desc">0 / 2000</div>
+      </div>
+    </div>
+
+    <!-- Giá & Kho hàng -->
+    <div class="card card-pad form-section">
+      <h2 style="font-weight:700;margin-bottom:1rem;">Giá &amp; Kho hàng</h2>
+      <div class="grid-2">
+        <div class="form-group" style="margin:0;">
+          <label for="f-price">Giá bán (VNĐ) <span style="color:#ef4444;">*</span></label>
+          <input type="number" id="f-price" class="form-control" placeholder="0" min="0">
+        </div>
+        <div class="form-group" style="margin:0;">
+          <label for="f-original-price">Giá gốc (VNĐ)</label>
+          <input type="number" id="f-original-price" class="form-control" placeholder="0 (tuỳ chọn)" min="0">
+        </div>
+        <div class="form-group" style="margin:0;">
+          <label for="f-stock">Số lượng tồn kho <span style="color:#ef4444;">*</span></label>
+          <input type="number" id="f-stock" class="form-control" placeholder="0" min="0">
+        </div>
+        <div class="form-group" style="margin:0;">
+          <label for="f-sku">Mã SKU</label>
+          <input type="text" id="f-sku" class="form-control" placeholder="VD: VN-TOM-001" maxlength="100">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Cột phải ===== -->
+  <div>
+    <!-- Phân loại -->
+    <div class="card card-pad form-section">
+      <h2 style="font-weight:700;margin-bottom:1rem;">Phân loại</h2>
+      <div class="form-group">
+        <label for="f-category">Danh mục <span style="color:#ef4444;">*</span></label>
+        <select id="f-category" class="form-control">
+          <option value="">-- Chọn danh mục --</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="f-difficulty">Độ khó</label>
+        <select id="f-difficulty" class="form-control">
+          <option value="Dễ">Dễ</option>
+          <option value="Trung bình">Trung bình</option>
+          <option value="Khó">Khó</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="f-care">Mức chăm sóc</label>
+        <input type="text" id="f-care" class="form-control" placeholder="VD: Tưới 2 lần/ngày" maxlength="250">
+      </div>
+      <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem;">
+        <input type="checkbox" id="f-instock" checked style="width:18px;height:18px;cursor:pointer;">
+        <label for="f-instock" style="margin:0;cursor:pointer;font-weight:500;">Còn hàng</label>
+      </div>
+      <div style="display:flex;align-items:center;gap:.5rem;">
+        <input type="checkbox" id="f-status" checked style="width:18px;height:18px;cursor:pointer;">
+        <label for="f-status" style="margin:0;cursor:pointer;font-weight:500;">Hiển thị (Bán)</label>
+      </div>
+    </div>
+
+    <!-- Hình ảnh -->
+    <div class="card card-pad form-section">
+      <h2 style="font-weight:700;margin-bottom:1rem;">Hình ảnh</h2>
+      <div class="form-group">
+        <label for="f-image">URL ảnh</label>
+        <input type="url" id="f-image" class="form-control" placeholder="https://...">
+      </div>
+      <div id="img-preview" style="display:none;margin-top:.75rem;">
+        <img id="preview-img" style="width:100%;border-radius:.5rem;max-height:200px;object-fit:cover;border:1px solid #e5e7eb;">
+      </div>
+    </div>
+
+    <!-- Action buttons -->
+    <div style="display:flex;flex-direction:column;gap:.5rem;">
+      <button id="btn-save" onclick="saveProduct()" class="save-btn">💾 Lưu sản phẩm</button>
+      <a href="products" class="btn btn-outline" style="text-align:center;">Hủy</a>
+    </div>
+  </div>
+</div>
+
+@section Scripts {
+    <script>
+        const editId = getParam('id');
+        let isSubmitting = false;
+
+        async function initForm() {
+          // Load danh mục
+          const select = document.getElementById('f-category');
+          if (select) {
+            try {
+              const categories = await API.getCategories();
+              select.innerHTML = '<option value="">-- Chọn danh mục --</option>' +
+                categories.map(c => `<option value="${c.categoryId}">${c.name}</option>`).join('');
+            } catch (e) {
+              console.error("Lỗi khi tải danh mục:", e);
+            }
+          }
+
+          // Bind image preview event
+          document.getElementById('f-image').addEventListener('input', updatePreview);
+
+          // Load sản phẩm nếu đang sửa
+          if (editId) {
+            document.getElementById('form-title').textContent = 'Chỉnh sửa sản phẩm';
+            try {
+              const data = await API.getProduct(editId);
+              const p = data ? data.product : null;
+              if (p) fillForm(p);
+            } catch (e) {
+              showToast('Không tải được thông tin sản phẩm', 'error');
+            }
+          }
+        }
+
+        function fillForm(p) {
+          document.getElementById('f-name').value          = p.name || '';
+          document.getElementById('f-short-desc').value    = p.shortDescription || '';
+          document.getElementById('f-desc').value          = p.description || '';
+          document.getElementById('f-price').value         = p.price || '';
+          document.getElementById('f-original-price').value= p.originalPrice != null ? p.originalPrice : '';
+          document.getElementById('f-stock').value         = p.stock ?? 0;
+          document.getElementById('f-sku').value           = p.sku || '';
+          document.getElementById('f-category').value      = p.categoryId || '';
+          document.getElementById('f-difficulty').value    = p.difficulty || 'Dễ';
+          document.getElementById('f-care').value          = p.careLevel || '';
+          document.getElementById('f-instock').checked     = p.inStock !== false;
+          document.getElementById('f-status').checked      = p.status !== false;
+          document.getElementById('f-image').value         = p.image || '';
+
+          // Update char counters
+          updateCharCount('f-short-desc', 'cc-short', 500);
+          updateCharCount('f-desc', 'cc-desc', 2000);
+          updatePreview();
+        }
+
+        function updatePreview() {
+          const url = document.getElementById('f-image').value.trim();
+          if (url) {
+            document.getElementById('preview-img').src = url;
+            document.getElementById('img-preview').style.display = 'block';
+          } else {
+            document.getElementById('img-preview').style.display = 'none';
+          }
+        }
+
+        function updateCharCount(fieldId, counterId, max) {
+          const len = (document.getElementById(fieldId).value || '').length;
+          document.getElementById(counterId).textContent = `${len} / ${max}`;
+        }
+
+        async function saveProduct() {
+          if (isSubmitting) return;
+
+          // --- Validation ---
+          const name     = document.getElementById('f-name').value.trim();
+          const price    = parseFloat(document.getElementById('f-price').value);
+          const stock    = parseInt(document.getElementById('f-stock').value);
+          const catId    = parseInt(document.getElementById('f-category').value);
+
+          if (!name)              { showToast('Vui lòng nhập tên sản phẩm', 'error'); return; }
+          if (isNaN(price) || price <= 0) { showToast('Vui lòng nhập giá bán hợp lệ (> 0)', 'error'); return; }
+          if (isNaN(stock) || stock < 0)  { showToast('Số lượng tồn kho phải >= 0', 'error'); return; }
+          if (!catId)             { showToast('Vui lòng chọn danh mục', 'error'); return; }
+
+          const origPriceRaw = document.getElementById('f-original-price').value;
+          const originalPrice = origPriceRaw ? parseFloat(origPriceRaw) : null;
+
+          const payload = {
+            name:             name,
+            categoryId:       catId,
+            price:            price,
+            stock:            stock,
+            inStock:          document.getElementById('f-instock').checked,
+            status:           document.getElementById('f-status').checked,
+            shortDescription: document.getElementById('f-short-desc').value.trim() || null,
+            description:      document.getElementById('f-desc').value.trim() || null,
+            originalPrice:    originalPrice,
+            sku:              document.getElementById('f-sku').value.trim() || null,
+            difficulty:       document.getElementById('f-difficulty').value || null,
+            careLevel:        document.getElementById('f-care').value.trim() || null,
+            image:            document.getElementById('f-image').value.trim() || null,
+          };
+
+          // --- Submit ---
+          isSubmitting = true;
+          const btn = document.getElementById('btn-save');
+          btn.disabled = true;
+          btn.textContent = editId ? '⏳ Đang cập nhật...' : '⏳ Đang thêm...';
+
+          let result;
+          if (editId) {
+            result = await API.updateProduct(editId, payload);
+          } else {
+            result = await API.createProduct(payload);
+          }
+
+          isSubmitting = false;
+          btn.disabled = false;
+          btn.textContent = '💾 Lưu sản phẩm';
+
+          if (result.ok) {
+            showToast(editId ? '✅ Đã cập nhật sản phẩm!' : '✅ Đã thêm sản phẩm mới!');
+            setTimeout(() => location.href = 'products', 1200);
+          } else {
+            showToast('❌ Lỗi: ' + (result.error || 'Không xác định'), 'error');
+          }
+        }
+
+        initForm();
+    </script>
+}

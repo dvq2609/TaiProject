@@ -1,0 +1,148 @@
+@{
+    ViewData["Title"] = "Khuyến mãi";
+}
+
+@section Styles {
+    <style>
+        .data-table{width:100%;border-collapse:collapse;background:#fff;border-radius:.75rem;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.07);} 
+        .data-table th{text-align:left;padding:.75rem 1rem;background:#f9fafb;font-size:.8rem;font-weight:600;color:#6b7280;border-bottom:1px solid #e5e7eb;} 
+        .data-table td{padding:.75rem 1rem;border-bottom:1px solid #f9fafb;font-size:.875rem;}
+    </style>
+}
+
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+  <div>
+    <h1 style="font-size:1.5rem;font-weight:800;">Quản lý khuyến mãi</h1>
+    <p style="color:#6b7280;font-size:.875rem;">Mã giảm giá và chương trình ưu đãi</p>
+  </div>
+  <button onclick="showForm()" class="btn btn-green">+ Tạo mã mới</button>
+</div>
+
+<!-- Add form -->
+<div class="card card-pad" id="promo-form" style="display:none;margin-bottom:1.5rem;">
+  <h2 style="font-weight:700;margin-bottom:1rem;">Tạo mã khuyến mãi mới</h2>
+  <div class="grid-2" style="gap:.75rem;">
+    <div class="form-group" style="margin:0;">
+      <label>Mã giảm giá *</label>
+      <input type="text" id="pf-code" class="form-control" placeholder="VD: SUMMER25" style="text-transform:uppercase;">
+    </div>
+    <div class="form-group" style="margin:0;">
+      <label>Loại giảm giá</label>
+      <select id="pf-type" class="form-control" onchange="toggleAmountLabel()">
+        <option value="percent">Theo %</option>
+        <option value="fixed">Số tiền cố định</option>
+      </select>
+    </div>
+    <div class="form-group" style="margin:0;">
+      <label id="pf-value-label">Giá trị giảm (%)</label>
+      <input type="number" id="pf-value" class="form-control" placeholder="VD: 20">
+    </div>
+    <div class="form-group" style="margin:0;">
+      <label>Đơn tối thiểu (VNĐ)</label>
+      <input type="number" id="pf-min" class="form-control" placeholder="0 = không yêu cầu">
+    </div>
+    <div class="form-group" style="margin:0;">
+      <label>Số lượt dùng tối đa</label>
+      <input type="number" id="pf-limit" class="form-control" placeholder="Để trống = không giới hạn">
+    </div>
+    <div class="form-group" style="margin:0;">
+      <label>Ngày hết hạn</label>
+      <input type="date" id="pf-end" class="form-control">
+    </div>
+  </div>
+  <div class="form-group">
+    <label>Mô tả</label>
+    <input type="text" id="pf-desc" class="form-control" placeholder="Mô tả ngắn về chương trình khuyến mãi">
+  </div>
+  <div style="display:flex;gap:.5rem;">
+    <button onclick="savePromo()" class="btn btn-green">Tạo mã</button>
+    <button onclick="document.getElementById('promo-form').style.display='none'" class="btn btn-outline">Hủy</button>
+  </div>
+</div>
+
+<!-- Table -->
+<div style="overflow-x:auto;">
+  <table class="data-table">
+    <thead><tr>
+      <th>Mã</th><th>Loại</th><th>Giá trị</th><th>Đơn tối thiểu</th>
+      <th>Mô tả</th><th>Hết hạn</th><th>Trạng thái</th><th>Hành động</th>
+    </tr></thead>
+    <tbody id="promo-tbody"></tbody>
+  </table>
+</div>
+
+@section Scripts {
+    <script>
+        let localPromos = [];
+
+        async function initPage() {
+          try {
+            localPromos = await API.getPromotions();
+          } catch(e) {
+            localPromos = [...PROMOTIONS];
+          }
+          renderTable();
+        }
+
+        function toggleAmountLabel() {
+          const type=document.getElementById('pf-type').value;
+          document.getElementById('pf-value-label').textContent=type==='percent'?'Giá trị giảm (%)':'Số tiền giảm (VNĐ)';
+        }
+
+        function renderTable() {
+          document.getElementById('promo-tbody').innerHTML = localPromos.map(p => {
+            const code = p.code || '';
+            const type = p.discountType || 'percent';
+            const value = p.discount || p.discountValue || 0;
+            const min = p.minOrder || p.minOrderValue || 0;
+            const date = p.validUntil || p.endDate || 'Không hạn';
+            const active = p.isActive !== false;
+            return `
+              <tr>
+                <td>
+                  <div style="font-family:monospace;font-weight:700;font-size:.95rem;background:#f3f4f6;padding:.2rem .5rem;border-radius:.25rem;display:inline-block;">${code}</div>
+                </td>
+                <td>${type === 'percent' ? 'Phần trăm' : 'Cố định'}</td>
+                <td style="font-weight:700;color:#16a34a;">${type === 'percent' ? value + '%' : fmt(value)}</td>
+                <td>${min > 0 ? fmt(min) : 'Không'}</td>
+                <td style="color:#6b7280;font-size:.85rem;max-width:200px;">${p.description || ''}</td>
+                <td style="color:#9ca3af;font-size:.8rem;">${date}</td>
+                <td><span class="badge ${active ? 'badge-green' : 'badge-red'}">${active ? 'Đang chạy' : 'Dừng'}</span></td>
+                <td>
+                  <div style="display:flex;gap:.25rem;">
+                    <button onclick="togglePromo('${code}')" class="btn" style="font-size:.75rem;padding:.3rem .6rem;background:${active ? '#fef3c7' : '#f0fdf4'};color:${active ? '#92400e' : '#16a34a'};border:none;cursor:pointer;">${active ? 'Dừng' : 'Kích hoạt'}</button>
+                    <button onclick="deletePromo('${code}')" class="btn" style="font-size:.75rem;padding:.3rem .6rem;background:#fee2e2;color:#ef4444;border:none;cursor:pointer;">Xóa</button>
+                  </div>
+                </td>
+              </tr>`;
+          }).join('');
+        }
+
+        function showForm() { document.getElementById('promo-form').style.display='block'; }
+
+        function savePromo() {
+          const code=document.getElementById('pf-code').value.trim().toUpperCase();
+          const val=parseInt(document.getElementById('pf-value').value);
+          if(!code||!val){ showToast('Vui lòng nhập đầy đủ','error'); return; }
+          if(localPromos.find(p=>p.code===code)){ showToast('Mã đã tồn tại','error'); return; }
+          localPromos.push({
+            code, discountType:document.getElementById('pf-type').value, discount:val,
+            minOrder:parseInt(document.getElementById('pf-min').value)||0,
+            validUntil:document.getElementById('pf-end').value||null,
+            description:document.getElementById('pf-desc').value||'Khuyến mãi '+code, isActive:true
+          });
+          document.getElementById('promo-form').style.display='none';
+          renderTable(); showToast('Đã tạo mã '+code);
+        }
+
+        function togglePromo(code) {
+          const p=localPromos.find(x=>x.code===code); if(p){ p.isActive=!p.isActive; renderTable(); }
+        }
+
+        function deletePromo(code) {
+          if(confirm('Xóa mã '+code+'?')){ localPromos=localPromos.filter(x=>x.code!==code); renderTable(); showToast('Đã xóa mã '+code); }
+        }
+
+        initPage();
+    </script>
+}

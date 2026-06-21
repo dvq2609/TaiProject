@@ -1,0 +1,139 @@
+@{
+    ViewData["Title"] = "Chi tiết sản phẩm";
+}
+
+@section Styles {
+    <style>
+        .detail-grid { display:grid; grid-template-columns:1fr 1fr; gap:2rem; margin-bottom:2rem; }
+        @@media(max-width:768px){ .detail-grid { grid-template-columns:1fr; } }
+        .detail-img { border-radius:1rem; overflow:hidden; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.08); }
+        .detail-img img { width:100%; aspect-ratio:1; object-fit:cover; }
+        .detail-info { background:#fff; border-radius:1rem; padding:2rem; box-shadow:0 1px 3px rgba(0,0,0,.08); }
+        .qty-row { display:flex; align-items:center; gap:.75rem; margin:1rem 0; }
+        .qty-btn { width:36px; height:36px; border:1px solid #d1d5db; border-radius:.375rem; background:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+        .qty-btn:hover { background:#f3f4f6; }
+        .fav-btn { padding:.75rem 1.25rem; border:2px solid #d1d5db; border-radius:.5rem; background:#fff; cursor:pointer; display:flex; align-items:center; gap:.5rem; font-size:.9rem; }
+        .fav-btn.active { border-color:#ef4444; color:#ef4444; }
+        .care-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:.75rem; margin:1rem 0; }
+        .care-item { background:#f0fdf4; border-radius:.5rem; padding:.75rem; text-align:center; }
+        .care-item .lbl { font-size:.75rem; color:#6b7280; margin-bottom:.25rem; }
+        .care-item .val { font-size:.875rem; font-weight:500; color:#166534; }
+    </style>
+}
+
+<div class="page-content" id="main-content">
+    <button onclick="history.back()" style="display:inline-flex;align-items:center;gap:.5rem;color:#6b7280;border:none;background:none;cursor:pointer;margin-bottom:1.5rem;">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        Quay lại
+    </button>
+    <div id="product-detail"></div>
+</div>
+
+@section Scripts {
+    <script>
+        const id = getParam('id');
+        let p = null, allRelated = [];
+        let qty = 1;
+
+        document.getElementById('product-detail').innerHTML = '<div style="text-align:center;padding:4rem;color:#9ca3af;">Đang tải...</div>';
+
+        (async () => {
+            const result = await API.getProduct(id);
+            p = result.product;
+            
+            if(!p) {
+                document.getElementById('product-detail').innerHTML = '<div class="alert alert-error">Không tìm thấy sản phẩm</div>';
+                return;
+            }
+            document.title = p.name + ' - VƯƠN';
+
+            // related: load same category using categoryId
+            try {
+                const relData = await apiFetch(`/products?categoryId=${p.categoryId}&pageSize=8`);
+                allRelated = (relData.products || [])
+                    .map(r => API._mapProduct(r))
+                    .filter(r => r.id != p.id)
+                    .slice(0, 4);
+            } catch(e) {
+                allRelated = PRODUCTS.filter(r => r.category === p.category && r.id != p.id).slice(0, 4);
+            }
+
+            function render() {
+                const isFav = Store.isFavorite(p.id);
+                document.getElementById('product-detail').innerHTML = `
+                    <div class="detail-grid">
+                        <div class="detail-img"><img src="${p.image}" alt="${p.name}"></div>
+                        <div class="detail-info">
+                            <h1 style="font-size:1.75rem;font-weight:700;margin-bottom:1rem;">${p.name}</h1>
+                            <div class="stars" style="margin-bottom:1rem;">${stars(p.rating)}<span style="font-size:.875rem;color:#6b7280;margin-left:.5rem">${p.rating} (${p.reviews} đánh giá)</span></div>
+                            ${p.originalPrice ? `<div style="font-size:.9rem;color:#9ca3af;text-decoration:line-through;">${fmt(p.originalPrice)}</div>` : ''}
+                            <div style="font-size:2rem;font-weight:700;color:#16a34a;margin-bottom:1rem;">${fmt(p.price)}</div>
+                            ${p.shortDescription ? `<p style="color:#374151;font-weight:500;margin-bottom:.75rem;line-height:1.6;">${p.shortDescription}</p>` : ''}
+                            ${p.description ? `<p style="color:#4b5563;margin-bottom:1.5rem;line-height:1.6;">${p.description}</p>` : ''}
+
+                            <div class="care-grid">
+                                ${p.difficulty ? `<div class="care-item"><div class="lbl">Độ khó</div><div class="val">${p.difficulty}</div></div>` : ''}
+                                ${p.careLevel ? `<div class="care-item"><div class="lbl">Chăm sóc</div><div class="val">${p.careLevel}</div></div>` : ''}
+                                <div class="care-item"><div class="lbl">Danh mục</div><div class="val">${p.categoryName || p.category || '—'}</div></div>
+                            </div>
+
+                            <div style="margin:1rem 0;">
+                                <span style="font-size:.875rem;color:#374151;font-weight:500;">Còn lại: ${p.stock} sản phẩm</span>
+                                <span class="badge ${p.inStock?'badge-green':'badge-red'}" style="margin-left:.5rem;">${p.inStock?'Còn hàng':'Hết hàng'}</span>
+                            </div>
+
+                            <div class="qty-row">
+                                <label style="font-weight:500;">Số lượng:</label>
+                                <button class="qty-btn" onclick="changeQty(-1)">−</button>
+                                <span id="qty-display" style="min-width:2rem;text-align:center;font-weight:600;">${qty}</span>
+                                <button class="qty-btn" onclick="changeQty(1)">+</button>
+                            </div>
+
+                            <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
+                                <button onclick="addNow()" class="btn btn-green" style="flex:1;">
+                                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 001.94 1.61h9.72a2 2 0 001.94-1.61L23 6H6"/></svg>
+                                    Thêm vào giỏ
+                                </button>
+                                <button class="fav-btn ${isFav?'active':''}" onclick="toggleFav()" id="fav-btn">
+                                    <svg width="20" height="20" fill="${isFav?'currentColor':'none'}" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+                                    ${isFav?'Bỏ yêu thích':'Yêu thích'}
+                                </button>
+                            </div>
+
+                            <div style="margin-top:1rem;">
+                                <a href="ai-chat?q=${encodeURIComponent('Cây \"' + p.name + '\" này trồng như nào')}" style="display:inline-flex;align-items:center;gap:.5rem;font-size:.875rem;color:#2563eb;">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                                    Hỏi AI về cây này
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Related -->
+                    <div class="section">
+                        <div class="section-title"><h2>Sản phẩm liên quan</h2></div>
+                        <div class="grid-4">${allRelated.map(r=>productCardHTML(r)).join('')}</div>
+                    </div>`;
+            }
+
+            window.changeQty = function(d) {
+                qty = Math.max(1, qty+d);
+                const el = document.getElementById('qty-display');
+                if(el) el.textContent = qty;
+            };
+
+            window.addNow = function() {
+                Store.addToCart(p, qty);
+                showToast(`Đã thêm ${qty} sản phẩm vào giỏ! 🛒`);
+            };
+
+            window.toggleFav = function() {
+                const added = Store.toggleFavorite(p.id);
+                showToast(added?'Đã thêm vào yêu thích ❤️':'Đã bỏ yêu thích');
+                render();
+            };
+
+            render();
+        })();
+    </script>
+}

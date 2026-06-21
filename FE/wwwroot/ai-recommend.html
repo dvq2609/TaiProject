@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đề xuất cây phù hợp - VƯƠN</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    .rec-card { background:#fff; border-radius:.75rem; box-shadow:0 1px 3px rgba(0,0,0,.08); padding:1.25rem; border-left:4px solid #16a34a; }
+    .match-bar { height:8px; background:#e5e7eb; border-radius:4px; overflow:hidden; margin:.5rem 0; }
+    .match-bar-fill { height:100%; background:linear-gradient(to right,#16a34a,#4ade80); border-radius:4px; transition:width .8s; }
+  </style>
+</head>
+<body>
+  <header id="site-header"></header>
+  <div class="page-content" style="max-width:700px;">
+    <h1 style="font-size:1.75rem;font-weight:700;margin-bottom:.5rem;">Đề xuất cây phù hợp</h1>
+    <p style="color:#6b7280;margin-bottom:1.5rem;">AI sẽ đề xuất cây phù hợp nhất với điều kiện của bạn</p>
+
+    <div class="card card-pad" style="margin-bottom:1.5rem;">
+      <h2 style="font-weight:700;margin-bottom:1rem;">Điều kiện của bạn</h2>
+      <div class="form-group">
+        <label>Diện tích (m²)</label>
+        <select id="area" class="form-control">
+          <option value="< 1">Dưới 1m²</option>
+          <option value="1-5" selected>1 - 5m²</option>
+          <option value="> 5">Trên 5m²</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Điều kiện ánh sáng</label>
+        <select id="light" class="form-control">
+          <option value="Ít ánh sáng">Ít ánh sáng (phòng kín)</option>
+          <option value="Ánh sáng trung bình" selected>Ánh sáng trung bình (cửa sổ)</option>
+          <option value="Nhiều ánh sáng">Nhiều ánh sáng (ban công)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Thời gian chăm sóc (phút/ngày)</label>
+        <select id="careTime" class="form-control">
+          <option value="< 10">Dưới 10 phút</option>
+          <option value="10-30" selected>10 - 30 phút</option>
+          <option value="> 30">Trên 30 phút</option>
+        </select>
+      </div>
+      <button onclick="getRecommendations()" class="btn btn-green btn-full" id="rec-btn">Đề xuất cây phù hợp</button>
+    </div>
+
+    <div id="results" style="display:none;">
+      <h2 style="font-weight:700;margin-bottom:1rem;">Kết quả đề xuất</h2>
+      <div id="rec-list" style="display:flex;flex-direction:column;gap:1rem;"></div>
+    </div>
+  </div>
+  <div id="mobile-nav"></div>
+  <footer id="site-footer"></footer>
+  <script src="assets/common.js"></script>
+  <script>
+    const FALLBACK_RECS = [
+      { name:'Rau cải xanh', match:95, reason:'Dễ trồng, phù hợp diện tích nhỏ, ít ánh sáng', careInstructions:'Tưới 2 lần/ngày, thu hoạch sau 30 ngày', id:'1' },
+      { name:'Cà chua bi', match:87, reason:'Năng suất cao, phù hợp diện tích trung bình', careInstructions:'Tưới buổi sáng chiều, bón phân NPK mỗi 2 tuần', id:'2' },
+      { name:'Rau húng quế', match:82, reason:'Dễ sống, ít cần chăm sóc, thơm ngon', careInstructions:'Tưới 1 lần/ngày, cắt tỉa thường xuyên', id:'9' }
+    ];
+
+    async function getRecommendations() {
+      const btn = document.getElementById('rec-btn');
+      btn.textContent='Đang phân tích...'; btn.disabled=true;
+      const area=document.getElementById('area').value, light=document.getElementById('light').value, careTime=document.getElementById('careTime').value;
+
+      // Filter products based on conditions
+      let recs = PRODUCTS.filter(p=>{
+        if(light==='Ít ánh sáng' && p.light==='Nhiều ánh sáng') return false;
+        if(careTime==='< 10' && p.difficulty==='Khó') return false;
+        return p.category==='vegetable'||p.category==='flower';
+      }).slice(0,3).map((p,i)=>({ id:p.id, name:p.name, match:95-i*8, reason:`Phù hợp với điều kiện ${light.toLowerCase()}, ${careTime} phút/ngày`, careInstructions:p.careLevel }));
+
+      if(recs.length===0) recs = FALLBACK_RECS;
+
+      document.getElementById('rec-list').innerHTML = recs.map(r=>`
+        <div class="rec-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <h3 style="font-weight:700;">${r.name}</h3>
+            <span style="font-size:1.1rem;font-weight:700;color:#16a34a;">${r.match}%</span>
+          </div>
+          <div class="match-bar"><div class="match-bar-fill" style="width:${r.match}%"></div></div>
+          <p style="font-size:.875rem;color:#6b7280;margin:.5rem 0;">${r.reason}</p>
+          <p style="font-size:.875rem;font-weight:500;color:#374151;">📋 ${r.careInstructions}</p>
+          <div style="margin-top:.75rem;display:flex;gap:.5rem;">
+            <a href="products?category=vegetable" class="btn btn-green btn-sm">Mua ngay</a>
+            <button onclick="addToCartToast('${r.id}')" class="btn btn-outline btn-sm">Thêm vào giỏ</button>
+          </div>
+        </div>`).join('');
+
+      document.getElementById('results').style.display='block';
+      btn.textContent='Đề xuất cây phù hợp'; btn.disabled=false;
+    }
+  </script>
+</body>
+</html>

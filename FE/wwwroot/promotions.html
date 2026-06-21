@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Khuyến mãi - VƯƠN</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    .promo-card { background:#fff; border-radius:.75rem; overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,.08); margin-bottom:1rem; }
+    .promo-banner { padding:1.5rem; display:flex; align-items:center; gap:1rem; }
+    .promo-body { padding:0 1.25rem 1.25rem; }
+    .code-badge { display:inline-flex; align-items:center; gap:.5rem; background:#f3f4f6; border:1px dashed #d1d5db; border-radius:.375rem; padding:.35rem .75rem; font-family:monospace; font-weight:700; font-size:1rem; cursor:pointer; }
+    .timer { display:flex; gap:.25rem; align-items:center; font-size:.75rem; color:#ef4444; }
+    .tag { display:inline-block; padding:.15rem .5rem; border-radius:.25rem; font-size:.7rem; font-weight:600; }
+  </style>
+</head>
+<body>
+  <header id="site-header"></header>
+  <div class="page-content" style="max-width:700px;">
+    <h1 style="font-size:1.75rem;font-weight:700;margin-bottom:.5rem;">Khuyến mãi & Ưu đãi</h1>
+    <p style="color:#6b7280;margin-bottom:1.5rem;">Các ưu đãi hấp dẫn đang chờ bạn</p>
+
+    <div id="promo-list"></div>
+
+    <!-- Enter code manually -->
+    <div class="card card-pad" style="margin-top:1.5rem;">
+      <h2 style="font-weight:700;margin-bottom:.75rem;">Nhập mã khuyến mãi</h2>
+      <div style="display:flex;gap:.5rem;">
+        <input type="text" id="manual-code" class="form-control" placeholder="Nhập mã giảm giá..." style="text-transform:uppercase;">
+        <button onclick="applyManual()" class="btn btn-green">Áp dụng</button>
+      </div>
+      <div id="code-result" style="margin-top:.75rem;display:none;"></div>
+    </div>
+  </div>
+  <div id="mobile-nav"></div>
+  <footer id="site-footer"></footer>
+  <script src="assets/common.js"></script>
+  <script>
+    const colors = [
+      ['#16a34a','#dcfce7','#166534'],
+      ['#2563eb','#dbeafe','#1e40af'],
+      ['#f59e0b','#fef3c7','#92400e'],
+      ['#8b5cf6','#ede9fe','#5b21b6'],
+    ];
+
+    document.getElementById('promo-list').innerHTML = PROMOTIONS.map((p,i)=>{
+      const [bg,light,dark] = colors[i%colors.length];
+      const discount = p.discountType==='percent'? p.discountValue+'%' : fmt(p.discountValue);
+      return `
+        <div class="promo-card">
+          <div class="promo-banner" style="background:${light};">
+            <div style="width:60px;height:60px;border-radius:.75rem;background:${bg};display:flex;align-items:center;justify-content:center;font-size:1.75rem;flex-shrink:0;">🎁</div>
+            <div style="flex:1;">
+              <div style="font-size:1.5rem;font-weight:800;color:${dark};">Giảm ${discount}</div>
+              <div style="font-size:.8rem;color:${dark};opacity:.8;">${p.minOrderValue>0?'Đơn từ '+fmt(p.minOrderValue):'Không yêu cầu đơn tối thiểu'}</div>
+            </div>
+            ${p.usageLimit?`<div style="text-align:right;"><div style="font-size:.75rem;color:${dark};">Còn lại</div><div style="font-size:1.25rem;font-weight:700;color:${dark};">${p.usageLimit-p.usedCount}</div></div>`:''}
+          </div>
+          <div class="promo-body">
+            <p style="font-weight:600;margin-bottom:.5rem;">${p.description}</p>
+            <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
+              <div class="code-badge" onclick="copyCode('${p.code}')">
+                🏷 ${p.code}
+                <span style="font-size:.7rem;color:#6b7280;">Sao chép</span>
+              </div>
+              ${p.endDate?`<span class="timer">⏱ Đến ${p.endDate}</span>`:''}
+              ${!p.isActive?'<span class="tag" style="background:#fee2e2;color:#ef4444;">Đã hết hạn</span>':'<span class="tag" style="background:#dcfce7;color:#16a34a;">Đang hoạt động</span>'}
+            </div>
+            <div style="margin-top:.75rem;">
+              <a href="cart" class="btn btn-green btn-sm">Dùng ngay</a>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+
+    function copyCode(code) {
+      navigator.clipboard?.writeText(code).then(()=>showToast('Đã sao chép mã '+code)).catch(()=>showToast('Mã: '+code));
+    }
+
+    function applyManual() {
+      const code = document.getElementById('manual-code').value.trim().toUpperCase();
+      const res = document.getElementById('code-result');
+      const promo = PROMOTIONS.find(p=>p.code===code);
+      if(!promo) {
+        res.style.display='block'; res.innerHTML='<div class="alert alert-error">Mã không hợp lệ hoặc đã hết hạn</div>';
+      } else if(!promo.isActive) {
+        res.style.display='block'; res.innerHTML='<div class="alert alert-error">Mã khuyến mãi đã hết hạn</div>';
+      } else {
+        const disc = promo.discountType==='percent'?promo.discountValue+'%':fmt(promo.discountValue);
+        res.style.display='block'; res.innerHTML=`<div class="alert alert-success">✅ Mã hợp lệ! Giảm ${disc}. <a href="cart">Mua hàng ngay →</a></div>`;
+      }
+    }
+  </script>
+</body>
+</html>

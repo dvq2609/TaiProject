@@ -1,0 +1,98 @@
+@{
+    ViewData["Title"] = "Quản lý danh mục";
+}
+
+@section Styles {
+    <style>
+        .data-table{width:100%;border-collapse:collapse;background:#fff;border-radius:.75rem;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.07);}
+        .data-table th{text-align:left;padding:.75rem 1rem;background:#f9fafb;font-size:.8rem;font-weight:600;color:#6b7280;border-bottom:1px solid #e5e7eb;}
+        .data-table td{padding:.75rem 1rem;border-bottom:1px solid #f9fafb;font-size:.875rem;vertical-align:middle;}
+        .data-table tr:hover td{background:#fafafa;}
+        .search-bar{display:flex;gap:.5rem;margin-bottom:1rem;}
+        .search-bar input{flex:1;padding:.6rem 1rem;border:1px solid #e5e7eb;border-radius:.5rem;font-size:.875rem;outline:none;}
+        .search-bar input:focus{border-color:#16a34a;}
+    </style>
+}
+
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:.75rem;">
+  <div>
+    <h1 style="font-size:1.5rem;font-weight:800;">Quản lý danh mục</h1>
+    <p style="color:#6b7280;font-size:.875rem;" id="cat-count-text">Đang tải...</p>
+  </div>
+  <a href="category-form" class="btn btn-green">+ Thêm danh mục</a>
+</div>
+
+<div class="search-bar">
+  <input type="text" id="search-cat" placeholder="Tìm danh mục..." oninput="filterCategories()">
+</div>
+
+<div style="overflow-x:auto;">
+  <table class="data-table">
+    <thead><tr>
+      <th style="width: 80px;">ID</th><th>Tên danh mục</th><th style="width: 200px; text-align: right;">Hành động</th>
+    </tr></thead>
+    <tbody id="category-tbody"></tbody>
+  </table>
+</div>
+
+@section Scripts {
+    <script>
+        let categoriesList = [];
+        let filteredList = [];
+
+        async function loadCategories() {
+          try {
+            categoriesList = await API.getCategories();
+            filteredList = [...categoriesList];
+            renderTable();
+          } catch (e) {
+            showToast('Không thể tải danh mục từ máy chủ', 'error');
+            document.getElementById('cat-count-text').textContent = 'Lỗi tải dữ liệu';
+          }
+        }
+
+        function filterCategories() {
+          const q = document.getElementById('search-cat').value.trim().toLowerCase();
+          filteredList = categoriesList.filter(c => c.name.toLowerCase().includes(q));
+          renderTable();
+        }
+
+        function renderTable() {
+          document.getElementById('cat-count-text').textContent = filteredList.length + ' danh mục';
+          
+          if (filteredList.length === 0) {
+            document.getElementById('category-tbody').innerHTML = `
+              <tr>
+                <td colspan="3" style="text-align:center;color:#9ca3af;padding:2rem;">Không tìm thấy danh mục nào</td>
+              </tr>`;
+            return;
+          }
+
+          document.getElementById('category-tbody').innerHTML = filteredList.map(c => `
+            <tr>
+              <td style="color:#9ca3af;font-weight:600;">#${c.categoryId}</td>
+              <td style="font-weight:600;">${c.name}</td>
+              <td style="text-align: right;">
+                <div style="display:inline-flex;gap:.25rem;">
+                  <a href="category-form?id=${c.categoryId}" class="btn btn-outline" style="font-size:.75rem;padding:.3rem .6rem;">Sửa</a>
+                  <button onclick="deleteCategory(${c.categoryId}, '${c.name.replace(/'/g, "\\'")}')" class="btn" style="font-size:.75rem;padding:.3rem .6rem;background:#fee2e2;color:#ef4444;border:none;cursor:pointer;">Xóa</button>
+                </div>
+              </td>
+            </tr>`).join('');
+        }
+
+        async function deleteCategory(id, name) {
+          if (confirm(`Bạn chắc chắn muốn xóa danh mục "${name}"?`)) {
+            const result = await API.deleteCategory(id);
+            if (result.ok) {
+              showToast('Xóa danh mục thành công!');
+              await loadCategories();
+            } else {
+              showToast(result.error || 'Xóa danh mục thất bại. Vui lòng kiểm tra lại.', 'error');
+            }
+          }
+        }
+
+        loadCategories();
+    </script>
+}

@@ -1,0 +1,119 @@
+@{
+    ViewData["Title"] = "Xác nhận đơn hàng";
+}
+
+<div class="page-content" style="max-width:700px;">
+    <h1 style="font-size:1.75rem;font-weight:700;margin-bottom:1.5rem;">Xác nhận đơn hàng</h1>
+    
+    <!-- Steps -->
+    <div style="display:flex;margin-bottom:2rem;gap:0;align-items:center;">
+      <div style="flex:1;text-align:center;position:relative;">
+        <div style="width:32px;height:32px;border-radius:50%;background:#16a34a;color:#fff;border:2px solid #16a34a;display:flex;align-items:center;justify-content:center;margin:0 auto;font-size:.8rem;font-weight:700;position:relative;z-index:1;">1</div>
+        <div style="font-size:.75rem;margin-top:.5rem;color:#16a34a;">Địa chỉ</div>
+      </div>
+      <div style="flex:1;height:2px;background:#16a34a;margin-bottom:12px;"></div>
+      <div style="flex:1;text-align:center;position:relative;">
+        <div style="width:32px;height:32px;border-radius:50%;background:#16a34a;color:#fff;border:2px solid #16a34a;display:flex;align-items:center;justify-content:center;margin:0 auto;font-size:.8rem;font-weight:700;position:relative;z-index:1;">2</div>
+        <div style="font-size:.75rem;margin-top:.5rem;color:#16a34a;">Thanh toán</div>
+      </div>
+      <div style="flex:1;height:2px;background:#16a34a;margin-bottom:12px;"></div>
+      <div style="flex:1;text-align:center;position:relative;">
+        <div style="width:32px;height:32px;border-radius:50%;background:#16a34a;color:#fff;border:2px solid #16a34a;display:flex;align-items:center;justify-content:center;margin:0 auto;font-size:.8rem;font-weight:700;position:relative;z-index:1;">3</div>
+        <div style="font-size:.75rem;margin-top:.5rem;color:#16a34a;">Xác nhận</div>
+      </div>
+    </div>
+
+    <div id="confirm-content"></div>
+</div>
+
+@section Scripts {
+    <script>
+        if (!requireAuth()) {
+          throw new Error("Auth required");
+        }
+        const cart = Store.getCart();
+        const subtotal = Store.getCartTotal();
+        const shipping = subtotal>=500000?0:30000;
+        const total = subtotal+shipping;
+        const shipping_info = JSON.parse(localStorage.getItem('vuon_shipping')||'{}');
+        const payment = localStorage.getItem('vuon_payment')||'payos';
+        const paymentLabel = {cod:'Thanh toán khi nhận hàng (COD)', payos:'Chuyển khoản QR (PayOS)'};
+
+        document.getElementById('confirm-content').innerHTML = `
+          <div class="card card-pad" style="margin-bottom:1rem;">
+            <h2 style="font-weight:700;margin-bottom:1rem;">Sản phẩm</h2>
+            ${cart.map(item=>`
+              <div style="display:flex;align-items:center;gap:1rem;padding:.75rem 0;border-bottom:1px solid #f3f4f6;">
+                <img src="${item.product.image}" style="width:64px;height:64px;border-radius:.5rem;object-fit:cover;">
+                <div style="flex:1;">
+                  <p style="font-weight:500;">${item.product.name}</p>
+                  <p style="font-size:.8rem;color:#6b7280;">Số lượng: ${item.quantity}</p>
+                </div>
+                <span style="font-weight:600;">${fmt(item.product.price*item.quantity)}</span>
+              </div>`).join('')}
+          </div>
+
+          <div class="card card-pad" style="margin-bottom:1rem;">
+            <h2 style="font-weight:700;margin-bottom:1rem;">Địa chỉ giao hàng</h2>
+            <p style="font-weight:500;">${shipping_info.fullName||''}</p>
+            <p style="color:#6b7280;">${shipping_info.phone||''}</p>
+            <p style="color:#6b7280;">${shipping_info.address||''}</p>
+            ${shipping_info.note?`<p style="color:#6b7280;font-style:italic;">Ghi chú: ${shipping_info.note}</p>`:''}
+          </div>
+
+          <div class="card card-pad" style="margin-bottom:1rem;">
+            <h2 style="font-weight:700;margin-bottom:1rem;">Tổng quan</h2>
+            <div style="display:flex;justify-content:space-between;padding:.4rem 0;color:#6b7280;font-size:.9rem;"><span>Tạm tính:</span><span>${fmt(subtotal)}</span></div>
+            <div style="display:flex;justify-content:space-between;padding:.4rem 0;color:#6b7280;font-size:.9rem;"><span>Phí vận chuyển:</span><span>${shipping===0?'Miễn phí':fmt(shipping)}</span></div>
+            ${shipping===0?'<p style="font-size:.8rem;color:#16a34a;margin:.25rem 0 1rem;">🎉 Bạn được miễn phí vận chuyển!</p>':''}
+            <div style="display:flex;justify-content:space-between;padding:.75rem 0;border-top:1px solid #e5e7eb;font-weight:700;font-size:1.1rem;"><span>Tổng cộng:</span><span style="color:#16a34a;">${fmt(total)}</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:.875rem;color:#6b7280;"><span>Phương thức:</span><span>${paymentLabel[payment]||payment}</span></div>
+          </div>
+
+          <button id="btn-submit" onclick="placeOrder()" class="btn btn-green btn-full">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            Đặt hàng
+          </button>`;
+
+        async function placeOrder() {
+          if (cart.length === 0) {
+            showToast('Giỏ hàng trống!', 'error');
+            return;
+          }
+          const payload = {
+            receiverName: shipping_info.fullName || '',
+            receiverPhone: shipping_info.phone || '',
+            shippingAddress: shipping_info.address || '',
+            note: shipping_info.note || null,
+            paymentMethod: payment,
+            items: cart.map(item => ({
+              productId: parseInt(item.productId),
+              quantity: item.quantity
+            }))
+          };
+          
+          const btn = document.getElementById('btn-submit');
+          const origHtml = btn.innerHTML;
+          try {
+            btn.disabled = true;
+            btn.innerHTML = 'Đang xử lý đặt hàng...';
+            const res = await API.createOrder(payload);
+            
+            // Clear local storage cart
+            Store.clearCart();
+            
+            if (res.paymentMethod === 'payos' && res.checkoutUrl) {
+              // Redirect to PayOS QR Payment URL
+              window.location.href = res.checkoutUrl;
+            } else {
+              // COD or normal success
+              window.location.href = 'order-success?orderId=' + res.orderId;
+            }
+          } catch (e) {
+            showToast(e.message || 'Đặt hàng thất bại. Vui lòng thử lại.', 'error');
+            btn.disabled = false;
+            btn.innerHTML = origHtml;
+          }
+        }
+    </script>
+}

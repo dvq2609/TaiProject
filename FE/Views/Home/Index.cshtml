@@ -1,0 +1,108 @@
+@{
+    ViewData["Title"] = "Trang chủ";
+}
+
+<!-- Hero -->
+<section class="hero">
+    <div class="hero-inner">
+        <h1>Trồng cây dễ dàng với VƯƠN</h1>
+        <p>Mua cây trồng chất lượng + AI tư vấn miễn phí</p>
+        <div class="hero-btns">
+            <a href="products?category=vegetable" class="btn" style="background:#fff;color:#16a34a;">Mua sắm ngay</a>
+            <a href="ai-chat" class="btn btn-outline" style="border-color:#fff;color:#fff;">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                Tư vấn AI
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Promo Banner -->
+<div class="promo-banner">
+    <div class="promo-banner-inner">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+        <p><strong>Khuyến mãi:</strong> Giảm 20% cho đơn hàng đầu tiên - Miễn phí ship từ 200k</p>
+    </div>
+</div>
+
+<div class="page-content">
+    <!-- Categories -->
+    <section class="section">
+        <div class="section-title"><h2>Danh mục sản phẩm</h2></div>
+        <div class="grid-4">
+            <a href="products?category=vegetable" class="category-card">
+                <div class="category-icon green"><svg width="32" height="32" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M2 2s6 0 10 4c2 2 3 5 3 8M12 14c-2 4-5 6-8 6"/><path d="M22 2c-4 0-10 2-10 12"/></svg></div>
+                <span style="font-weight:500;">Cây rau</span>
+            </a>
+            <a href="products?category=flower" class="category-card">
+                <div class="category-icon pink"><svg width="32" height="32" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2C8 2 5 5 5 9c0 2.5 1.5 5 3 6.5L12 22l4-6.5c1.5-1.5 3-4 3-6.5 0-4-3-7-7-7z"/></svg></div>
+                <span style="font-weight:500;">Cây hoa</span>
+            </a>
+            <a href="products?category=combo" class="category-card">
+                <div class="category-icon purple"><svg width="32" height="32" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg></div>
+                <span style="font-weight:500;">Combo</span>
+            </a>
+            <a href="products?category=accessory" class="category-card">
+                <div class="category-icon blue"><svg width="32" height="32" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg></div>
+                <span style="font-weight:500;">Phụ kiện</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- Featured Products -->
+    <section class="section">
+        <div class="section-title">
+            <h2>Sản phẩm nổi bật</h2>
+            <a href="products?category=vegetable">Xem tất cả →</a>
+        </div>
+        <div class="grid-4" id="featured-products"></div>
+    </section>
+
+    <!-- AI CTA -->
+    <section class="section">
+        <div class="ai-cta">
+            <h2>AI tư vấn nhanh</h2>
+            <p>Không biết nên trồng cây gì? Để AI giúp bạn chọn cây phù hợp với điều kiện của bạn</p>
+            <a href="ai-chat" class="btn" style="background:#fff;color:#2563eb;display:inline-flex;align-items:center;gap:.5rem;">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                Bắt đầu tư vấn
+            </a>
+        </div>
+    </section>
+
+    <!-- Blog Preview -->
+    <section class="section">
+        <div class="section-title"><h2>Bài viết mới nhất</h2><a href="blog">Xem tất cả →</a></div>
+        <div class="grid-3" id="blog-preview"></div>
+    </section>
+</div>
+
+@section Scripts {
+    <script>
+        // Featured products – thử API trước, fallback mock
+        (async () => {
+            try {
+                const data = await apiFetch('/products?pageSize=8&page=1');
+                const products = (data.products || []).map(p => API._mapProduct(p));
+                document.getElementById('featured-products').innerHTML =
+                    products.slice(0, 8).map(p => productCardHTML(p)).join('');
+            } catch(e) {
+                // fallback mock
+                document.getElementById('featured-products').innerHTML =
+                    PRODUCTS.slice(0, 8).map(p => productCardHTML(p)).join('');
+            }
+        })();
+
+        // Blog preview
+        document.getElementById('blog-preview').innerHTML = BLOG_POSTS.map(post => `
+            <a href="blog" class="card" style="overflow:hidden;text-decoration:none;color:inherit;">
+                <img src="${post.image}" alt="${post.title}" style="width:100%;height:180px;object-fit:cover;">
+                <div class="card-pad">
+                    <span class="badge badge-green" style="margin-bottom:.5rem;">${post.category}</span>
+                    <h3 style="font-size:1rem;font-weight:600;margin-bottom:.5rem;color:#111827;">${post.title}</h3>
+                    <p style="font-size:.8rem;color:#6b7280;">${post.excerpt}</p>
+                    <p style="font-size:.75rem;color:#9ca3af;margin-top:.5rem;">${post.author} · ${new Date(post.date).toLocaleDateString('vi-VN')}</p>
+                </div>
+            </a>`).join('');
+    </script>
+}
