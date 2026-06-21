@@ -144,8 +144,8 @@ using (var scope = app.Services.CreateScope())
         // 1. Tạo Database và chạy các bảng Migrations nếu chưa có
         dbContext.Database.Migrate();
         
-        // 2. Chạy file seed_data.sql để nạp danh mục, sản phẩm mẫu nếu DB trống
-        if (!dbContext.Products.Any())
+        // 2. Chạy file seed_data.sql để nạp danh mục, sản phẩm mẫu nếu DB trống hoặc tất cả sản phẩm có Stock = 0 (lỗi seed trước đó)
+        if (!dbContext.Products.Any() || dbContext.Products.All(p => p.Stock == 0))
         {
             var seedSqlPath = Path.Combine(AppContext.BaseDirectory, "seed_data.sql");
             if (!File.Exists(seedSqlPath))

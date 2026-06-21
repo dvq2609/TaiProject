@@ -87,13 +87,13 @@ USING (VALUES
     (10, N'Chậu đất nung', 4, 45000.00, 150, 4.2, 1, 'https://images.unsplash.com/photo-1622372738946-62e02505feb3?w=400'),
     (11, N'Combo kit trồng rau', 3, 250000.00, 40, 4.9, 1, 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400'),
     (12, N'Hoa dã yên thảo', 2, 95000.00, 28, 4.4, 1, 'https://images.unsplash.com/photo-1490750967868-88df5691cc9e?w=400')
-) AS Source (ProductId, Name, CategoryId, Price, InStock, Star, Status, Image)
+) AS Source (ProductId, Name, CategoryId, Price, Stock, Star, Status, Image)
 ON Target.ProductId = Source.ProductId
 WHEN MATCHED THEN
-    UPDATE SET Name = Source.Name, CategoryId = Source.CategoryId, Price = Source.Price, InStock = Source.InStock, Star = Source.Star, Status = Source.Status, Image = Source.Image
+    UPDATE SET Name = Source.Name, CategoryId = Source.CategoryId, Price = Source.Price, Stock = Source.Stock, InStock = 1, Star = Source.Star, Status = Source.Status, Image = Source.Image
 WHEN NOT MATCHED BY TARGET THEN
-    INSERT (ProductId, Name, CategoryId, Price, InStock, Star, Status, Image) 
-    VALUES (Source.ProductId, Source.Name, Source.CategoryId, Source.Price, Source.InStock, Source.Star, Source.Status, Source.Image);
+    INSERT (ProductId, Name, CategoryId, Price, Stock, InStock, Star, Status, Image) 
+    VALUES (Source.ProductId, Source.Name, Source.CategoryId, Source.Price, Source.Stock, 1, Source.Star, Source.Status, Source.Image);
 
 SET IDENTITY_INSERT [dbo].[Product] OFF;
 GO
