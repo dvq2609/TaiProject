@@ -5,45 +5,45 @@
 
 // ── Mock Data ──────────────────────────────────
 const PRODUCTS = [
-  { id:'1', name:'Rau cải xanh', category:'vegetable', price:120000, image:'https://tse1.mm.bing.net/th/id/OIP.YMyyO4B2E7JowCCN-rgPEwHaFj?rs=1&pid=ImgDetMain&o=7&rm=3', description:'Rau cải xanh tươi, dễ trồng, phù hợp cho người mới bắt đầu', difficulty:'Dễ', light:'Nhiều ánh sáng', careLevel:'Tưới nước 2 lần/ngày', rating:4.5, reviews:128, inStock:true, stock:50 },
-  { id:'2', name:'Cà chua bi', category:'vegetable', price:120000, image:'https://images.unsplash.com/photo-1592841200221-a6898f307baa?w=400', description:'Cà chua bi ngọt, năng suất cao', difficulty:'Trung bình', light:'Nhiều ánh sáng', careLevel:'Tưới nước 1 lần/ngày, bón phân định kỳ', rating:4.8, reviews:95, inStock:true, stock:30 },
-  { id:'3', name:'Hoa hồng', category:'flower', price:120000, image:'https://img.thuthuatphanmem.vn/uploads/2018/09/24/hinh-anh-hoa-hong-dep-nhat_053955504.jpg', description:'Hoa hồng đỏ thắm, thơm ngát', difficulty:'Khó', light:'Nhiều ánh sáng', careLevel:'Cần chăm sóc kỹ lưỡng', rating:4.9, reviews:203, inStock:true, stock:20 },
-  { id:'4', name:'Hoa oải hương', category:'flower', price:120000, image:'https://charsawfarms.com/cdn/shop/files/PurpleBouquetlavender2.jpg?v=1710207668&width=1946', description:'Hoa oải hương tím, hương thơm dễ chịu', difficulty:'Dễ', light:'Nhiều ánh sáng', careLevel:'Ít cần chăm sóc', rating:4.6, reviews:87, inStock:true, stock:45 },
-  { id:'5', name:'Combo cây rau gia vị', category:'combo', price:120000, image:'https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?w=400', description:'Bộ 5 loại rau gia vị: húng quế, rau mùi, ngò gai, rau húng, tía tô', difficulty:'Dễ', light:'Ánh sáng trung bình', careLevel:'Tưới nước đều đặn', rating:4.7, reviews:156, inStock:true, stock:25 },
-  { id:'6', name:'Phân bón hữu cơ', category:'accessory', price:10000, image:'https://th.bing.com/th/id/R.6c286dba498a4c368b9da7b62e2e04a6?rik=HGOrgHSmda8Yqg&pid=ImgRaw&r=0', description:'Phân bón hữu cơ cho cây trồng', difficulty:'Dễ', light:'Ít ánh sáng', careLevel:'Không cần chăm sóc', rating:4.4, reviews:67, inStock:true, stock:100 },
-  { id:'7', name:'Rau diếp xanh', category:'vegetable', price:120000, image:'https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?w=400', description:'Rau diếp tươi ngon, giàu vitamin', difficulty:'Dễ', light:'Ánh sáng trung bình', careLevel:'Tưới nước 2 lần/ngày', rating:4.3, reviews:45, inStock:true, stock:60 },
-  { id:'8', name:'Hoa cúc vàng', category:'flower', price:120000, image:'https://media.chuabavang.com/files/tu_chinh/2021/12/28/hoa-cuc-vang-clb-cuc-vang-chua-ba-vang-0839.jpg', description:'Hoa cúc vàng rực rỡ, dễ trồng', difficulty:'Dễ', light:'Nhiều ánh sáng', careLevel:'Tưới nước vừa phải', rating:4.5, reviews:92, inStock:true, stock:35 },
-  { id:'9', name:'Rau húng quế', category:'vegetable', price:80000, image:'https://images.unsplash.com/photo-1618375569909-3c8616cf7733?w=400', description:'Húng quế thơm, dễ trồng trong chậu', difficulty:'Dễ', light:'Ánh sáng trung bình', careLevel:'Tưới 1 lần/ngày', rating:4.6, reviews:78, inStock:true, stock:80 },
-  { id:'10', name:'Chậu đất nung', category:'accessory', price:45000, image:'https://images.unsplash.com/photo-1622372738946-62e02505feb3?w=400', description:'Chậu đất nung thoáng khí, giúp rễ cây phát triển tốt', difficulty:'Dễ', light:'Ít ánh sáng', careLevel:'Không cần chăm sóc', rating:4.2, reviews:34, inStock:true, stock:150 },
-  { id:'11', name:'Combo kit trồng rau', category:'combo', price:250000, image:'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400', description:'Bộ kit đầy đủ: chậu + đất + hạt giống + hướng dẫn', difficulty:'Dễ', light:'Ánh sáng trung bình', careLevel:'Theo hướng dẫn kèm theo', rating:4.9, reviews:312, inStock:true, stock:40 },
-  { id:'12', name:'Hoa dã yên thảo', category:'flower', price:95000, image:'https://images.unsplash.com/photo-1490750967868-88df5691cc9e?w=400', description:'Hoa dã yên thảo nhiều màu sắc, thích hợp trồng ban công', difficulty:'Trung bình', light:'Nhiều ánh sáng', careLevel:'Tưới vừa phải', rating:4.4, reviews:56, inStock:true, stock:28 }
+  { id: '1', name: 'Rau cải xanh', category: 'vegetable', price: 120000, image: 'https://tse1.mm.bing.net/th/id/OIP.YMyyO4B2E7JowCCN-rgPEwHaFj?rs=1&pid=ImgDetMain&o=7&rm=3', description: 'Rau cải xanh tươi, dễ trồng, phù hợp cho người mới bắt đầu', difficulty: 'Dễ', light: 'Nhiều ánh sáng', careLevel: 'Tưới nước 2 lần/ngày', rating: 4.5, reviews: 128, inStock: true, stock: 50 },
+  { id: '2', name: 'Cà chua bi', category: 'vegetable', price: 120000, image: 'https://images.unsplash.com/photo-1592841200221-a6898f307baa?w=400', description: 'Cà chua bi ngọt, năng suất cao', difficulty: 'Trung bình', light: 'Nhiều ánh sáng', careLevel: 'Tưới nước 1 lần/ngày, bón phân định kỳ', rating: 4.8, reviews: 95, inStock: true, stock: 30 },
+  { id: '3', name: 'Hoa hồng', category: 'flower', price: 120000, image: 'https://img.thuthuatphanmem.vn/uploads/2018/09/24/hinh-anh-hoa-hong-dep-nhat_053955504.jpg', description: 'Hoa hồng đỏ thắm, thơm ngát', difficulty: 'Khó', light: 'Nhiều ánh sáng', careLevel: 'Cần chăm sóc kỹ lưỡng', rating: 4.9, reviews: 203, inStock: true, stock: 20 },
+  { id: '4', name: 'Hoa oải hương', category: 'flower', price: 120000, image: 'https://charsawfarms.com/cdn/shop/files/PurpleBouquetlavender2.jpg?v=1710207668&width=1946', description: 'Hoa oải hương tím, hương thơm dễ chịu', difficulty: 'Dễ', light: 'Nhiều ánh sáng', careLevel: 'Ít cần chăm sóc', rating: 4.6, reviews: 87, inStock: true, stock: 45 },
+  { id: '5', name: 'Combo cây rau gia vị', category: 'combo', price: 120000, image: 'https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?w=400', description: 'Bộ 5 loại rau gia vị: húng quế, rau mùi, ngò gai, rau húng, tía tô', difficulty: 'Dễ', light: 'Ánh sáng trung bình', careLevel: 'Tưới nước đều đặn', rating: 4.7, reviews: 156, inStock: true, stock: 25 },
+  { id: '6', name: 'Phân bón hữu cơ', category: 'accessory', price: 10000, image: 'https://th.bing.com/th/id/R.6c286dba498a4c368b9da7b62e2e04a6?rik=HGOrgHSmda8Yqg&pid=ImgRaw&r=0', description: 'Phân bón hữu cơ cho cây trồng', difficulty: 'Dễ', light: 'Ít ánh sáng', careLevel: 'Không cần chăm sóc', rating: 4.4, reviews: 67, inStock: true, stock: 100 },
+  { id: '7', name: 'Rau diếp xanh', category: 'vegetable', price: 120000, image: 'https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?w=400', description: 'Rau diếp tươi ngon, giàu vitamin', difficulty: 'Dễ', light: 'Ánh sáng trung bình', careLevel: 'Tưới nước 2 lần/ngày', rating: 4.3, reviews: 45, inStock: true, stock: 60 },
+  { id: '8', name: 'Hoa cúc vàng', category: 'flower', price: 120000, image: 'https://media.chuabavang.com/files/tu_chinh/2021/12/28/hoa-cuc-vang-clb-cuc-vang-chua-ba-vang-0839.jpg', description: 'Hoa cúc vàng rực rỡ, dễ trồng', difficulty: 'Dễ', light: 'Nhiều ánh sáng', careLevel: 'Tưới nước vừa phải', rating: 4.5, reviews: 92, inStock: true, stock: 35 },
+  { id: '9', name: 'Rau húng quế', category: 'vegetable', price: 80000, image: 'https://images.unsplash.com/photo-1618375569909-3c8616cf7733?w=400', description: 'Húng quế thơm, dễ trồng trong chậu', difficulty: 'Dễ', light: 'Ánh sáng trung bình', careLevel: 'Tưới 1 lần/ngày', rating: 4.6, reviews: 78, inStock: true, stock: 80 },
+  { id: '10', name: 'Chậu đất nung', category: 'accessory', price: 45000, image: 'https://images.unsplash.com/photo-1622372738946-62e02505feb3?w=400', description: 'Chậu đất nung thoáng khí, giúp rễ cây phát triển tốt', difficulty: 'Dễ', light: 'Ít ánh sáng', careLevel: 'Không cần chăm sóc', rating: 4.2, reviews: 34, inStock: true, stock: 150 },
+  { id: '11', name: 'Combo kit trồng rau', category: 'combo', price: 250000, image: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400', description: 'Bộ kit đầy đủ: chậu + đất + hạt giống + hướng dẫn', difficulty: 'Dễ', light: 'Ánh sáng trung bình', careLevel: 'Theo hướng dẫn kèm theo', rating: 4.9, reviews: 312, inStock: true, stock: 40 },
+  { id: '12', name: 'Hoa dã yên thảo', category: 'flower', price: 95000, image: 'https://images.unsplash.com/photo-1490750967868-88df5691cc9e?w=400', description: 'Hoa dã yên thảo nhiều màu sắc, thích hợp trồng ban công', difficulty: 'Trung bình', light: 'Nhiều ánh sáng', careLevel: 'Tưới vừa phải', rating: 4.4, reviews: 56, inStock: true, stock: 28 }
 ];
 
 const MOCK_USERS = [
-  { id:'1', name:'Nguyễn Văn A', email:'nguyenvana@email.com', phone:'0901234567', joinedDate:'2025-01-15', totalOrders:12, totalSpent:2500000 },
-  { id:'2', name:'Trần Thị B', email:'tranthib@email.com', phone:'0912345678', joinedDate:'2025-02-20', totalOrders:5, totalSpent:850000 }
+  { id: '1', name: 'Nguyễn Văn A', email: 'nguyenvana@email.com', phone: '0901234567', joinedDate: '2025-01-15', totalOrders: 12, totalSpent: 2500000 },
+  { id: '2', name: 'Trần Thị B', email: 'tranthib@email.com', phone: '0912345678', joinedDate: '2025-02-20', totalOrders: 5, totalSpent: 850000 }
 ];
 
 const MOCK_ORDERS = [
-  { id:'ORD001', userId:'1', items:[{productId:'1',quantity:2},{productId:'3',quantity:1}], total:200000, status:'completed', createdAt:'2026-02-28', shippingInfo:{fullName:'Nguyễn Văn A',phone:'0901234567',address:'123 Đường ABC, Quận 1, TP.HCM'}, paymentMethod:'COD' },
-  { id:'ORD002', userId:'2', items:[{productId:'5',quantity:1}], total:120000, status:'shipping', createdAt:'2026-03-01', shippingInfo:{fullName:'Trần Thị B',phone:'0912345678',address:'456 Đường XYZ, Quận 3, TP.HCM'}, paymentMethod:'Chuyển khoản' },
-  { id:'ORD003', userId:'1', items:[{productId:'2',quantity:3},{productId:'6',quantity:2}], total:195000, status:'processing', createdAt:'2026-03-03', shippingInfo:{fullName:'Nguyễn Văn A',phone:'0901234567',address:'123 Đường ABC, Quận 1, TP.HCM'}, paymentMethod:'Ví điện tử' }
+  { id: 'ORD001', userId: '1', items: [{ productId: '1', quantity: 2 }, { productId: '3', quantity: 1 }], total: 200000, status: 'completed', createdAt: '2026-02-28', shippingInfo: { fullName: 'Nguyễn Văn A', phone: '0901234567', address: '123 Đường ABC, Quận 1, TP.HCM' }, paymentMethod: 'COD' },
+  { id: 'ORD002', userId: '2', items: [{ productId: '5', quantity: 1 }], total: 120000, status: 'shipping', createdAt: '2026-03-01', shippingInfo: { fullName: 'Trần Thị B', phone: '0912345678', address: '456 Đường XYZ, Quận 3, TP.HCM' }, paymentMethod: 'Chuyển khoản' },
+  { id: 'ORD003', userId: '1', items: [{ productId: '2', quantity: 3 }, { productId: '6', quantity: 2 }], total: 195000, status: 'processing', createdAt: '2026-03-03', shippingInfo: { fullName: 'Nguyễn Văn A', phone: '0901234567', address: '123 Đường ABC, Quận 1, TP.HCM' }, paymentMethod: 'Ví điện tử' }
 ];
 
 const BLOG_POSTS = [
-  { id:'1', title:'Cách trồng cà chua bi trên ban công', excerpt:'Hướng dẫn chi tiết cách trồng cà chua bi tại nhà cho người mới bắt đầu...', image:'https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=600', author:'Chuyên gia Vườn', date:'2026-02-15', category:'Hướng dẫn' },
-  { id:'2', title:'10 loại cây dễ trồng nhất cho người bận rộn', excerpt:'Những loại cây không cần chăm sóc nhiều vẫn cho năng suất cao...', image:'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=600', author:'Admin Vườn', date:'2026-02-20', category:'Tips' },
-  { id:'3', title:'Chẩn đoán và xử lý bệnh vàng lá', excerpt:'Nguyên nhân và cách khắc phục tình trạng lá cây bị vàng...', image:'https://images.unsplash.com/photo-1558904541-efa843a96f01?w=600', author:'Chuyên gia Vườn', date:'2026-02-25', category:'Bệnh cây' }
+  { id: '1', title: 'Cách trồng cà chua bi trên ban công', excerpt: 'Hướng dẫn chi tiết cách trồng cà chua bi tại nhà cho người mới bắt đầu...', image: 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=600', author: 'Chuyên gia Vườn', date: '2026-02-15', category: 'Hướng dẫn' },
+  { id: '2', title: '10 loại cây dễ trồng nhất cho người bận rộn', excerpt: 'Những loại cây không cần chăm sóc nhiều vẫn cho năng suất cao...', image: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=600', author: 'Admin Vườn', date: '2026-02-20', category: 'Tips' },
+  { id: '3', title: 'Chẩn đoán và xử lý bệnh vàng lá', excerpt: 'Nguyên nhân và cách khắc phục tình trạng lá cây bị vàng...', image: 'https://images.unsplash.com/photo-1558904541-efa843a96f01?w=600', author: 'Chuyên gia Vườn', date: '2026-02-25', category: 'Bệnh cây' }
 ];
 
 const PROMOTIONS = [
-  { id:'1', title:'Giảm 20% cho đơn hàng đầu tiên', code:'FIRSTORDER', discount:20, description:'Áp dụng cho khách hàng mới', validUntil:'2026-12-31', minOrder:100000 },
-  { id:'2', title:'Miễn phí vận chuyển', code:'FREESHIP', discount:0, description:'Cho đơn hàng từ 200k', validUntil:'2026-12-31', minOrder:200000 }
+  { id: '1', title: 'Giảm 20% cho đơn hàng đầu tiên', code: 'FIRSTORDER', discount: 20, description: 'Áp dụng cho khách hàng mới', validUntil: '2026-12-31', minOrder: 100000 },
+  { id: '2', title: 'Miễn phí vận chuyển', code: 'FREESHIP', discount: 0, description: 'Cho đơn hàng từ 200k', validUntil: '2026-12-31', minOrder: 200000 }
 ];
 
 const COMMUNITY_POSTS = [
-  { id:'1', author:'Minh Anh', avatar:'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100', content:'Vườn cà chua bi của mình sau 2 tháng! Cảm ơn VƯƠN đã tư vấn nhiệt tình 🍅', image:'https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=500', likes:45, comments:12 },
-  { id:'2', author:'Tuấn Kiệt', avatar:'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100', content:'Combo rau gia vị mua ở VƯƠN phát triển rất tốt. Bữa nào cũng có rau tươi!', image:'https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?w=500', likes:32, comments:8 }
+  { id: '1', author: 'Minh Anh', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100', content: 'Vườn cà chua bi của mình sau 2 tháng! Cảm ơn VƯƠN đã tư vấn nhiệt tình 🍅', image: 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=500', likes: 45, comments: 12 },
+  { id: '2', author: 'Tuấn Kiệt', avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100', content: 'Combo rau gia vị mua ở VƯƠN phát triển rất tốt. Bữa nào cũng có rau tươi!', image: 'https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?w=500', likes: 32, comments: 8 }
 ];
 
 const AI_QUESTIONS = [
@@ -65,17 +65,17 @@ const DEMO_CHAT_RESPONSES = {
 // ── State Management (localStorage) ──────────────
 const Store = {
   // User
-  getUser() { try { return JSON.parse(localStorage.getItem('vuon_user') || 'null'); } catch{ return null; } },
+  getUser() { try { return JSON.parse(localStorage.getItem('vuon_user') || 'null'); } catch { return null; } },
   setUser(u) { localStorage.setItem('vuon_user', JSON.stringify(u)); },
   clearUser() { localStorage.removeItem('vuon_user'); },
 
   // Cart
-  getCart() { try { return JSON.parse(localStorage.getItem('vuon_cart') || '[]'); } catch{ return []; } },
+  getCart() { try { return JSON.parse(localStorage.getItem('vuon_cart') || '[]'); } catch { return []; } },
   setCart(c) { localStorage.setItem('vuon_cart', JSON.stringify(c)); },
-  addToCart(product, qty=1) {
+  addToCart(product, qty = 1) {
     const cart = Store.getCart();
     const idx = cart.findIndex(i => String(i.productId) === String(product.id));
-    if(idx>=0) cart[idx].quantity += qty;
+    if (idx >= 0) cart[idx].quantity += qty;
     else cart.push({ productId: product.id, product, quantity: qty });
     Store.setCart(cart);
     Store.updateCartBadge();
@@ -85,26 +85,26 @@ const Store = {
     Store.updateCartBadge();
   },
   updateCartQty(productId, qty) {
-    if(qty<=0) { Store.removeFromCart(productId); return; }
+    if (qty <= 0) { Store.removeFromCart(productId); return; }
     const cart = Store.getCart();
     const idx = cart.findIndex(i => String(i.productId) === String(productId));
-    if(idx>=0) { cart[idx].quantity = qty; Store.setCart(cart); }
+    if (idx >= 0) { cart[idx].quantity = qty; Store.setCart(cart); }
     Store.updateCartBadge();
   },
   clearCart() { Store.setCart([]); Store.updateCartBadge(); },
-  getCartCount() { return Store.getCart().reduce((s,i)=>s+i.quantity, 0); },
-  getCartTotal() { return Store.getCart().reduce((s,i)=>s+i.product.price*i.quantity, 0); },
+  getCartCount() { return Store.getCart().reduce((s, i) => s + i.quantity, 0); },
+  getCartTotal() { return Store.getCart().reduce((s, i) => s + i.product.price * i.quantity, 0); },
   updateCartBadge() {
     const n = Store.getCartCount();
-    document.querySelectorAll('.cart-count').forEach(el => { el.textContent = n; el.style.display = n>0?'flex':'none'; });
+    document.querySelectorAll('.cart-count').forEach(el => { el.textContent = n; el.style.display = n > 0 ? 'flex' : 'none'; });
   },
 
   // Favorites
-  getFavorites() { try { return JSON.parse(localStorage.getItem('vuon_favs') || '[]'); } catch{ return []; } },
+  getFavorites() { try { return JSON.parse(localStorage.getItem('vuon_favs') || '[]'); } catch { return []; } },
   toggleFavorite(id) {
     const favs = Store.getFavorites().map(String);
     const idx = favs.indexOf(String(id));
-    if(idx>=0) favs.splice(idx,1); else favs.push(String(id));
+    if (idx >= 0) favs.splice(idx, 1); else favs.push(String(id));
     localStorage.setItem('vuon_favs', JSON.stringify(favs));
     return idx < 0; // returns true if added
   },
@@ -116,18 +116,18 @@ function fmt(num) { return num.toLocaleString('vi-VN') + 'đ'; }
 
 function stars(rating) {
   let h = '';
-  for(let i=1;i<=5;i++) h += `<svg width="16" height="16" fill="${i<=Math.floor(rating)?'#facc15':'#d1d5db'}" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+  for (let i = 1; i <= 5; i++) h += `<svg width="16" height="16" fill="${i <= Math.floor(rating) ? '#facc15' : '#d1d5db'}" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
   return h;
 }
 
 function getParam(name) { return new URLSearchParams(window.location.search).get(name); }
 
-function getProduct(id) { return PRODUCTS.find(p=>p.id===id); }
+function getProduct(id) { return PRODUCTS.find(p => p.id === id); }
 
 function statusLabel(s) {
-  const map = { completed:'Hoàn thành', shipping:'Đang giao', processing:'Đang xử lý', cancelled:'Đã hủy' };
-  const cls = { completed:'badge-green', shipping:'badge-blue', processing:'badge-yellow', cancelled:'badge-red' };
-  return `<span class="badge ${cls[s]||'badge-gray'}">${map[s]||s}</span>`;
+  const map = { completed: 'Hoàn thành', shipping: 'Đang giao', processing: 'Đang xử lý', cancelled: 'Đã hủy' };
+  const cls = { completed: 'badge-green', shipping: 'badge-blue', processing: 'badge-yellow', cancelled: 'badge-red' };
+  return `<span class="badge ${cls[s] || 'badge-gray'}">${map[s] || s}</span>`;
 }
 
 // ── SVG Icons (inline) ─────────────────────────
@@ -203,7 +203,7 @@ function renderHeader() {
         </div>
         <a href="${base}cart" class="cart-btn" title="Giỏ hàng">
           ${I.cart}
-          <span class="cart-badge cart-count" style="display:${cartCount>0?'flex':'none'}">${cartCount}</span>
+          <span class="cart-badge cart-count" style="display:${cartCount > 0 ? 'flex' : 'none'}">${cartCount}</span>
         </a>
         ${user ? `
           <a href="${base}profile" style="font-size:.875rem;color:#374151;">${user.name}</a>
@@ -297,7 +297,7 @@ async function _doHeaderSearch(q, base) {
         </div>
       </a>`).join('') +
       `<a class="hsd-view-all" href="${base}products?search=${encodeURIComponent(q)}">Xem tất cả kết quả →</a>`;
-  } catch(e) {
+  } catch (e) {
     dropdown.innerHTML = '<div class="hsd-empty">Lỗi tìm kiếm. Thử lại nhé!</div>';
   }
 }
@@ -325,12 +325,12 @@ function _navigateToSearch(q, base) {
 function renderMobileNav() {
   const base = getBasePath();
   const el = document.getElementById('mobile-nav');
-  if(!el) return;
+  if (!el) return;
   el.innerHTML = `
     <a href="${base}home" class="mobile-nav-item">${I.home}<span>Trang chủ</span></a>
     <a href="${base}cart" class="mobile-nav-item" style="position:relative">
       ${I.cart}
-      <span class="cart-count" style="position:absolute;top:2px;right:2px;background:#ef4444;color:#fff;font-size:.6rem;border-radius:50%;width:16px;height:16px;display:${Store.getCartCount()>0?'flex':'none'};align-items:center;justify-content:center">${Store.getCartCount()}</span>
+      <span class="cart-count" style="position:absolute;top:2px;right:2px;background:#ef4444;color:#fff;font-size:.6rem;border-radius:50%;width:16px;height:16px;display:${Store.getCartCount() > 0 ? 'flex' : 'none'};align-items:center;justify-content:center">${Store.getCartCount()}</span>
       <span>Giỏ hàng</span>
     </a>
     <a href="${base}favorites" class="mobile-nav-item">${I.heart}<span>Yêu thích</span></a>
@@ -342,7 +342,7 @@ function renderMobileNav() {
 function renderFooter() {
   const base = getBasePath();
   const el = document.getElementById('site-footer');
-  if(!el) return;
+  if (!el) return;
   el.innerHTML = `
     <div class="footer-newsletter">
       <div class="footer-newsletter-inner">
@@ -419,7 +419,7 @@ function renderFooter() {
         <p>© ${new Date().getFullYear()} VƯƠN. Bảo lưu mọi quyền.</p>
         <div class="footer-payments">
           <span>Thanh toán an toàn:</span>
-          ${['VISA','MC','MOMO','VNPAY','COD'].map(p=>`<span class="payment-tag">${p}</span>`).join('')}
+          ${['VISA', 'MC', 'MOMO', 'VNPAY', 'COD'].map(p => `<span class="payment-tag">${p}</span>`).join('')}
         </div>
       </div>
     </div>`;
@@ -435,7 +435,7 @@ function getBasePath() {
 }
 
 // ── Product Card HTML ───────────────────────────
-function productCardHTML(p, base='') {
+function productCardHTML(p, base = '') {
   return `
     <div class="product-card">
       <a href="${base}product-detail?id=${p.id}">
@@ -455,30 +455,30 @@ function productCardHTML(p, base='') {
 // ── Add to Cart Toast ───────────────────────────
 function addToCartToast(productId) {
   const p = getProduct(productId);
-  if(!p) return;
+  if (!p) return;
   Store.addToCart(p);
   showToast('Đã thêm vào giỏ hàng! 🛒');
 }
 
-function showToast(msg, type='success') {
+function showToast(msg, type = 'success') {
   let t = document.getElementById('toast');
-  if(!t) { t = document.createElement('div'); t.id='toast'; t.style.cssText='position:fixed;bottom:80px;right:1rem;padding:.75rem 1.25rem;border-radius:.5rem;font-size:.875rem;z-index:9999;transition:opacity .3s;max-width:280px;box-shadow:0 4px 12px rgba(0,0,0,.15);'; document.body.appendChild(t); }
+  if (!t) { t = document.createElement('div'); t.id = 'toast'; t.style.cssText = 'position:fixed;bottom:80px;right:1rem;padding:.75rem 1.25rem;border-radius:.5rem;font-size:.875rem;z-index:9999;transition:opacity .3s;max-width:280px;box-shadow:0 4px 12px rgba(0,0,0,.15);'; document.body.appendChild(t); }
   t.textContent = msg;
-  t.style.background = type==='error'?'#fee2e2':type==='warning'?'#fefce8':'#f0fdf4';
-  t.style.color = type==='error'?'#991b1b':type==='warning'?'#92400e':'#166534';
-  t.style.border = `1px solid ${type==='error'?'#fecaca':type==='warning'?'#fde68a':'#bbf7d0'}`;
-  t.style.opacity='1';
+  t.style.background = type === 'error' ? '#fee2e2' : type === 'warning' ? '#fefce8' : '#f0fdf4';
+  t.style.color = type === 'error' ? '#991b1b' : type === 'warning' ? '#92400e' : '#166534';
+  t.style.border = `1px solid ${type === 'error' ? '#fecaca' : type === 'warning' ? '#fde68a' : '#bbf7d0'}`;
+  t.style.opacity = '1';
   clearTimeout(t._timer);
-  t._timer = setTimeout(()=>{ t.style.opacity='0'; }, 2500);
+  t._timer = setTimeout(() => { t.style.opacity = '0'; }, 2500);
 }
 
 // ── Admin Sidebar ────────────────────────────────
 function renderAdminSidebar() {
   const el = document.getElementById('admin-sidebar');
-  if(!el) return;
+  if (!el) return;
   const path = window.location.pathname;
   const page = path.split('/').pop() || 'index.html';
-  function active(p) { return page===p?'style="background:#16a34a;color:#fff;"':'style="color:#d1fae5;"'; }
+  function active(p) { return page === p ? 'style="background:#16a34a;color:#fff;"' : 'style="color:#d1fae5;"'; }
   el.innerHTML = `
     <div id="admin-sidebar-inner" style="width:220px;background:#111827;min-height:100vh;padding:1.5rem 0;flex-shrink:0;">
       <div style="padding:0 1.25rem 1.5rem;border-bottom:1px solid #1f2937;">
@@ -490,22 +490,22 @@ function renderAdminSidebar() {
       <nav style="padding:1rem 0;">
         <p style="font-size:.65rem;font-weight:600;color:#6b7280;text-transform:uppercase;padding:.25rem 1.25rem;margin-bottom:.25rem;">Tổng quan</p>
         ${[
-          ['index.html','📊','Dashboard'],
-        ].map(([p,icon,label])=>`<a href="${p}" style="display:flex;align-items:center;gap:.75rem;padding:.6rem 1.25rem;text-decoration:none;border-radius:.375rem;margin:0 .5rem .25rem;font-size:.875rem;" ${active(p)}>${icon} ${label}</a>`).join('')}
+      ['index.html', '📊', 'Dashboard'],
+    ].map(([p, icon, label]) => `<a href="${p}" style="display:flex;align-items:center;gap:.75rem;padding:.6rem 1.25rem;text-decoration:none;border-radius:.375rem;margin:0 .5rem .25rem;font-size:.875rem;" ${active(p)}>${icon} ${label}</a>`).join('')}
         <p style="font-size:.65rem;font-weight:600;color:#6b7280;text-transform:uppercase;padding:.25rem 1.25rem;margin:.75rem 0 .25rem;">Quản lý</p>
         ${[
-          ['products.html','📦','Sản phẩm'],
-          ['categories.html','📁','Danh mục'],
-          ['inventory.html','🏭','Kho hàng'],
-          ['orders.html','🛒','Đơn hàng'],
-          ['customers.html','👥','Khách hàng'],
-        ].map(([p,icon,label])=>`<a href="${p}" style="display:flex;align-items:center;gap:.75rem;padding:.6rem 1.25rem;text-decoration:none;border-radius:.375rem;margin:0 .5rem .25rem;font-size:.875rem;" ${active(p)}>${icon} ${label}</a>`).join('')}
+      ['products.html', '📦', 'Sản phẩm'],
+      ['categories.html', '📁', 'Danh mục'],
+      ['inventory.html', '🏭', 'Kho hàng'],
+      ['orders.html', '🛒', 'Đơn hàng'],
+      ['customers.html', '👥', 'Khách hàng'],
+    ].map(([p, icon, label]) => `<a href="${p}" style="display:flex;align-items:center;gap:.75rem;padding:.6rem 1.25rem;text-decoration:none;border-radius:.375rem;margin:0 .5rem .25rem;font-size:.875rem;" ${active(p)}>${icon} ${label}</a>`).join('')}
         <p style="font-size:.65rem;font-weight:600;color:#6b7280;text-transform:uppercase;padding:.25rem 1.25rem;margin:.75rem 0 .25rem;">Nội dung</p>
         ${[
-          ['ai.html','🤖','AI & Dữ liệu'],
-          ['faq.html','❓','FAQ'],
-          ['promotions.html','🎁','Khuyến mãi'],
-        ].map(([p,icon,label])=>`<a href="${p}" style="display:flex;align-items:center;gap:.75rem;padding:.6rem 1.25rem;text-decoration:none;border-radius:.375rem;margin:0 .5rem .25rem;font-size:.875rem;" ${active(p)}>${icon} ${label}</a>`).join('')}
+      ['ai.html', '🤖', 'AI & Dữ liệu'],
+      ['faq.html', '❓', 'FAQ'],
+      ['promotions.html', '🎁', 'Khuyến mãi'],
+    ].map(([p, icon, label]) => `<a href="${p}" style="display:flex;align-items:center;gap:.75rem;padding:.6rem 1.25rem;text-decoration:none;border-radius:.375rem;margin:0 .5rem .25rem;font-size:.875rem;" ${active(p)}>${icon} ${label}</a>`).join('')}
       </nav>
       <div style="padding:1.25rem;border-top:1px solid #1f2937;margin-top:auto;">
         <a href="../home.html" style="display:flex;align-items:center;gap:.5rem;color:#9ca3af;text-decoration:none;font-size:.8rem;margin-bottom:.75rem;">← Về trang chủ</a>
@@ -523,7 +523,7 @@ function doLogout() {
 }
 
 function requireAuth() {
-  if(!Store.getUser()) {
+  if (!Store.getUser()) {
     window.location.href = getBasePath() + 'login';
     return false;
   }
@@ -531,25 +531,25 @@ function requireAuth() {
 }
 
 // ── AI Chat Logic ───────────────────────────────
-async function askGemini(userMsg, history=[]) {
+async function askGemini(userMsg, history = []) {
   // Try demo response first
   const low = userMsg.toLowerCase();
-  for(const [k,v] of Object.entries(DEMO_CHAT_RESPONSES)) {
-    if(k!=='default' && low.includes(k)) return v;
+  for (const [k, v] of Object.entries(DEMO_CHAT_RESPONSES)) {
+    if (k !== 'default' && low.includes(k)) return v;
   }
   try {
     const data = await apiFetch('/aichat/ask', {
       method: 'POST',
-      body: JSON.stringify({ 
-        userMsg: userMsg, 
-        history: history.map(h => ({ text: h.text, isBot: h.isBot })) 
+      body: JSON.stringify({
+        userMsg: userMsg,
+        history: history.map(h => ({ text: h.text, isBot: h.isBot }))
       })
     });
     if (data && data.reply) {
       return data.reply;
     }
     throw new Error('API error or empty reply');
-  } catch(e) {
+  } catch (e) {
     console.error("AI Chat Error, falling back to mock:", e);
     return DEMO_CHAT_RESPONSES.default;
   }
@@ -557,9 +557,9 @@ async function askGemini(userMsg, history=[]) {
 
 // ── Init on DOM ready ────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  if(document.getElementById('site-header')) renderHeader();
-  if(document.getElementById('mobile-nav')) renderMobileNav();
-  if(document.getElementById('site-footer')) renderFooter();
+  if (document.getElementById('site-header')) renderHeader();
+  if (document.getElementById('mobile-nav')) renderMobileNav();
+  if (document.getElementById('site-footer')) renderFooter();
   initCookieConsent();
 });
 
@@ -611,20 +611,30 @@ async function apiFetch(path, opts = {}) {
   try {
     const res = await fetch(API_BASE + path, { ...opts, signal: ctrl.signal, headers: { ...apiHeaders(), ...(opts.headers || {}) } });
     clearTimeout(tid);
-    
+
     if (res.status === 204) return null;
     if (res.status === 401) {
       clearToken();
       Store.clearUser();
+      if (path.includes('/auth/login')) {
+        let errJson = null;
+        try {
+          const contentType = res.headers.get("content-type");
+          if (contentType && contentType.includes("application/json")) {
+            errJson = await res.json();
+          }
+        } catch { }
+        throw new Error((errJson && (errJson.Message || errJson.message)) || "Sai tài khoản hoặc mật khẩu");
+      }
       throw new Error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
     }
-    
+
     let json = null;
     const contentType = res.headers.get("content-type");
     if (contentType && contentType.includes("application/json")) {
       json = await res.json();
     }
-    
+
     if (!res.ok) {
       throw new Error((json && (json.Message || json.message)) || `Lỗi hệ thống (${res.status})`);
     }
