@@ -60,7 +60,7 @@
 
         <div class="alert alert-info" style="margin-top:1rem;">
             <strong>Demo:</strong><br>
-            Admin: admin@vuon.vn / admin123<br>
+            Admin: admin@vuon.vn / 123456<br>
             User: bất kỳ email / password
         </div>
     </div>
@@ -127,8 +127,8 @@
         });
 
         function googleLogin() {
-            // Chuyển hướng trình duyệt đến API đăng nhập Google của Backend
-            window.location.href = 'http://localhost:5172/api/auth/oauth/google';
+            // Chuyển hướng trình duyệt đến API đăng nhập Google của Backend một cách động
+            window.location.href = API_BASE + '/auth/oauth/google';
         }
     </script>
 }
