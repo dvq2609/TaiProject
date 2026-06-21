@@ -1,3 +1,4 @@
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
 @{
     var path = Context.Request.Path.ToString().ToLower();
     string ActiveClass(string pageName) {
@@ -16,6 +17,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - VƯƠN Admin</title>
+    <meta name="api-base" content="@Configuration["BackendApiUrl"]" />
     <link rel="stylesheet" href="~/assets/style.css" asp-append-version="true" />
     @await RenderSectionAsync("Styles", required: false)
     <style>
