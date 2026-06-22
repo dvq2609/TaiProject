@@ -179,15 +179,20 @@ using (var scope = app.Services.CreateScope())
         {
             adminUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword("123456");
             adminUser.Status = true;
+            adminUser.RoleId = 1; // Đảm bảo role là Admin
+            adminUser.EmailConfirmedAt = DateTime.UtcNow;
         }
+      
 
         var userA = dbContext.Users.FirstOrDefault(u => u.Email == "nguyenvana@email.com");
         if (userA != null)
         {
             userA.PasswordHash = BCrypt.Net.BCrypt.HashPassword("123456");
             userA.Status = true;
+            userA.RoleId = 2; // Đảm bảo role là User
+            userA.EmailConfirmedAt = DateTime.UtcNow;
         }
-
+     
         // 4. Kích hoạt toàn bộ các tài khoản chưa kích hoạt khác để tránh bị kẹt do lỗi gửi email trước đó
         var inactiveUsers = dbContext.Users.Where(u => !u.Status).ToList();
         foreach (var u in inactiveUsers)
